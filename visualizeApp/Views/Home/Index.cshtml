@@ -1,0 +1,85 @@
+﻿@using System.IO
+@{
+    ViewData["Title"] = "ファイルのアップロード";
+    string webRootPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+    string dataPath = System.IO.Path.Combine(webRootPath, "data", "padDiagram.json");
+    bool padDiagramExists = System.IO.File.Exists(dataPath);
+}
+<div class="row">
+    <div class="col-4">
+        <div id="code-editor"></div>
+    </div>
+    <div class="col-8">
+        @if (padDiagramExists)
+        {
+            <div class="d-flex justify-content-center align-items-center vh-100">
+                <div class="text-center">
+                    <h2 class="mb-5">csファイルをアップロードしてください</h2>
+                    <form asp-action="ProcessFile" method="post" enctype="multipart/form-data">
+                        <div class="mb-5">
+                            <input type="file" id="csFile" name="csFile" accept=".cs" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary">アップロード</button>
+                    </form>
+                </div>
+            </div>
+        }
+        else
+        {
+            <svg class="vh-100" width="5000" height="5000"></svg>
+        }
+    </div>
+</div>
+
+<script>
+    require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs' } });
+
+    require(['vs/editor/editor.main'], function () {
+        var editor = monaco.editor.create(document.getElementById('code-editor'), {
+            // value: `class Hello {\n  public static void Main() {\n    Console.WriteLine("Hello, Monaco!");\n  }\n}`,
+            language: 'csharp', // C# 言語モード
+            theme: 'vs-dark', // ダークテーマ
+            automaticLayout: true
+        });
+
+        let highlightDecoration = []; // ハイライトを管理する配列
+
+        function highlightLine(lineNumber) {
+            var model = editor.getModel();
+            if (!model || model.getLineCount() < 3) {
+                // 行数が3未満なら既存のハイライトを消して終了
+                highlightDecoration = editor.deltaDecorations(highlightDecoration, []);
+                return;
+            }
+
+            var maxColumn = model.getLineMaxColumn(lineNumber);
+            highlightDecoration = editor.deltaDecorations(highlightDecoration, [
+                {
+                    range: new monaco.Range(lineNumber, 1, lineNumber, maxColumn),
+                    options: {
+                        isWholeLine: true,
+                        className: 'highlight-line'
+                    }
+                }
+            ]);
+        }
+
+        // 初期状態で3行以上あるなら3行目をハイライト
+        highlightLine(3);
+        // コンテンツが変更されるたびに、3行以上なら3行目をハイライト
+        editor.onDidChangeModelContent(function () {
+            highlightLine(3);
+        });
+        //変更が加えられた部分のみを取得
+        // editor.onDidChangeModelContent(function (e) {
+        //     console.log("Editor content has changed:", e);
+        // });
+        // コンテンツが変更されるたびにコード全体を取得
+        editor.onDidChangeModelContent(function (e) {
+            var fullCode = editor.getValue();  // コード全体を取得
+            console.log("Editor content changed:");
+            console.log(fullCode);  // 変更された後のコード全体を表示
+        });
+    });
+</script>
+<script src="~/js/visualize.js"></script>

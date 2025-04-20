@@ -1,0 +1,122 @@
+{
+  "Nodes": [
+    {
+      "Id": 0,
+      "Type": "start",
+      "Label": "start",
+      "Class": "temp",
+      "Method": "temp",
+      "Depth": 0,
+      "LineNumber": 0
+    },
+    {
+      "Id": 0,
+      "Type": "loop",
+      "Label": "i = 1;i <= 100;i++",
+      "Class": "FizzBuzz",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 7
+    },
+    {
+      "Id": 1,
+      "Type": "if",
+      "Label": "i % 3 == 0 && i % 5 == 0",
+      "Class": "FizzBuzz",
+      "Method": "Main",
+      "Depth": 1,
+      "LineNumber": 9
+    },
+    {
+      "Id": 2,
+      "Type": "expression",
+      "Label": "Console.WriteLine(\"FizzBuzz\")",
+      "Class": "FizzBuzz",
+      "Method": "Main",
+      "Depth": 2,
+      "LineNumber": 11
+    },
+    {
+      "Id": 3,
+      "Type": "else if",
+      "Label": "i % 3 == 0",
+      "Class": "FizzBuzz",
+      "Method": "Main",
+      "Depth": 2,
+      "LineNumber": 9
+    },
+    {
+      "Id": 4,
+      "Type": "expression",
+      "Label": "Console.WriteLine(\"Fizz\")",
+      "Class": "FizzBuzz",
+      "Method": "Main",
+      "Depth": 3,
+      "LineNumber": 15
+    },
+    {
+      "Id": 5,
+      "Type": "else if",
+      "Label": "i % 5 == 0",
+      "Class": "FizzBuzz",
+      "Method": "Main",
+      "Depth": 3,
+      "LineNumber": 9
+    },
+    {
+      "Id": 6,
+      "Type": "expression",
+      "Label": "Console.WriteLine(\"Buzz\")",
+      "Class": "FizzBuzz",
+      "Method": "Main",
+      "Depth": 4,
+      "LineNumber": 19
+    },
+    {
+      "Id": 7,
+      "Type": "expression",
+      "Label": "Console.WriteLine(i)",
+      "Class": "FizzBuzz",
+      "Method": "Main",
+      "Depth": 4,
+      "LineNumber": 23
+    }
+  ],
+  "Links": [
+    {
+      "Node1": 0,
+      "Node2": 1,
+      "Type": "loop"
+    },
+    {
+      "Node1": 1,
+      "Node2": 2,
+      "Type": "true"
+    },
+    {
+      "Node1": 1,
+      "Node2": 3,
+      "Type": "false"
+    },
+    {
+      "Node1": 3,
+      "Node2": 4,
+      "Type": "true"
+    },
+    {
+      "Node1": 3,
+      "Node2": 5,
+      "Type": "false"
+    },
+    {
+      "Node1": 5,
+      "Node2": 6,
+      "Type": "true"
+    },
+    {
+      "Node1": 5,
+      "Node2": 7,
+      "Type": "false"
+    }
+  ]
+}
