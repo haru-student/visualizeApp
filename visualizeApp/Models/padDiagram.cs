@@ -14,6 +14,8 @@ public class Link
     public required int Node1 { get; set; }
     public required int Node2 { get; set; }
     public required string Type { get; set; }
+    public required string Class { get; set; }
+    public required string Method { get; set; }
 }
 
 

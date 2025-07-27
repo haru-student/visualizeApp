@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Identity.Data;
+using System.Linq; // Enumerableのために必要
+using System.Reflection;
+// using Microsoft.AspNetCore.Identity.Data; // このUsingは不要そうなのでコメントアウト
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -16,33 +18,71 @@ namespace visualizeApp.Services
         private static JsonExporter jsonHandler = new JsonExporter();
         static bool isElse = false;
 
+        // MetadataReferenceのリストは一度だけ作成すれば良い
+        private List<MetadataReference> references = new List<MetadataReference>
+        {
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),        // mscorlib
+            MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),       // System.Console
+            MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),    // System.Linq
+            MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),        // System.Collections.Generic
+            MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location) // System.Runtime
+        };
+
+
         private static string currentClassName = "";
         private static string currentMethodName = "";
 
+        public static List<(string ClassName, string MethodName)> methodList = new();
+        public static List<(string source, string target)> linkCallGraph = new();
+
+        // SemanticModelを静的フィールドから削除
+
         public void Entry(string code)
         {
+            methodList.Clear();
+            linkCallGraph.Clear();
+            preId.Clear();
+            preType.Clear();
+            id = 0;
+            depth = 0;
+            isElse = false;
+
             SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
+
+            // CompilationはMetadataReferenceのリストを受け取る
+            var compilation = CSharpCompilation.Create("SemanticModel", new[] { tree }, references); // ここで 'references' を使用
+            // SemanticModelを取得
+            SemanticModel localSemanticModel = compilation.GetSemanticModel(tree); // ローカル変数として保持
+
             CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
 
             foreach (var classDecl in root.Members.OfType<ClassDeclarationSyntax>())
             {
                 currentClassName = classDecl.Identifier.Text;
-                AnalyzeClass(classDecl);
+                // AnalyzeClassにSemanticModelを渡す
+                AnalyzeClass(classDecl, localSemanticModel);
             }
-
+            jsonHandler.SaveCallGraph(methodList, linkCallGraph);
             jsonHandler.saveFile();
         }
 
-        static void AnalyzeClass(ClassDeclarationSyntax classDecl)
+        static void AnalyzeClass(ClassDeclarationSyntax classDecl, SemanticModel semanticModel) // semanticModelを引数に追加
         {
             foreach (var methodDecl in classDecl.Members.OfType<MethodDeclarationSyntax>())
             {
+                id = 0; 
+                depth = 0; 
+                preId.Clear();
+                preType.Clear();
+                isElse = false;
                 currentMethodName = methodDecl.Identifier.Text;
-                AnalyzeStatements(methodDecl.Body.Statements);
+                methodList.Add((currentClassName, currentMethodName));
+                Console.WriteLine(currentMethodName);
+                AnalyzeStatements(methodDecl.Body.Statements, semanticModel);
             }
         }
 
-        static void AnalyzeStatements(SyntaxList<StatementSyntax> statements)
+        static void AnalyzeStatements(SyntaxList<StatementSyntax> statements, SemanticModel semanticModel) // semanticModelを引数に追加
         {
             foreach (var statement in statements)
             {
@@ -50,9 +90,35 @@ namespace visualizeApp.Services
                 int lineNumber = lineSpan.StartLinePosition.Line + 1;
                 if (statement is ExpressionStatementSyntax exprStmt)
                 {
-                    jsonHandler.addNode(id, "expression", exprStmt.Expression.ToString(), depth, currentClassName, currentMethodName, lineNumber);
-                    CreateLink("expression");
-                    SaveCondition("expression");
+                    if (exprStmt.Expression is InvocationExpressionSyntax invocation)
+                    {
+                        // ここで渡すinvocationが、このsemanticModelのツリーに属していることを保証
+                        var symbol = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
+
+                        // ▼ ここを修正：nullチェック + 自作メソッドかチェック
+                        if (symbol != null && symbol.Locations.Any(loc => loc.IsInSource))
+                        {
+                            string calledClass = symbol.ContainingType.ToDisplayString(); // 呼び出し先クラス名
+                            string calledMethod = symbol.Name;                            // 呼び出し先メソッド名
+
+                            jsonHandler.addNode(id, "methodCall", calledClass + "." + calledMethod, depth, currentClassName, currentMethodName, lineNumber);
+                            CreateLink("expression"); // ← この関数はstaticなので、直接呼び出し
+                            SaveCondition("expression"); // ← この関数はstaticなので、直接呼び出し
+                            linkCallGraph.Add((currentClassName + "." + currentMethodName, calledClass + "." + calledMethod));
+                        }
+                        else
+                        {
+                            jsonHandler.addNode(id, "expression", exprStmt.Expression.ToString(), depth, currentClassName, currentMethodName, lineNumber);
+                            CreateLink("expression");
+                            SaveCondition("expression");
+                        }
+                    }
+                    else
+                    {
+                        jsonHandler.addNode(id, "expression", exprStmt.Expression.ToString(), depth, currentClassName, currentMethodName, lineNumber);
+                        CreateLink("expression");
+                        SaveCondition("expression");
+                    }
                     id++;
                 }
                 else if (statement is LocalDeclarationStatementSyntax localDeclStmt)
@@ -74,9 +140,10 @@ namespace visualizeApp.Services
                     id++;
                     int tmp = depth;
                     depth++;
+                    // 再帰呼び出しにもsemanticModelを渡す
                     AnalyzeStatements(ifStmt.Statement is BlockSyntax ifBlock
                         ? ifBlock.Statements
-                        : SyntaxFactory.SingletonList(ifStmt.Statement));
+                        : SyntaxFactory.SingletonList(ifStmt.Statement), semanticModel); // semanticModelを渡す
                     depth--;
                     DeleteCondition();
                     depth++;
@@ -92,9 +159,10 @@ namespace visualizeApp.Services
                             SaveCondition("else if");
                             id++;
                             depth++;
+                            // 再帰呼び出しにもsemanticModelを渡す
                             AnalyzeStatements(elseIfStmt.Statement is BlockSyntax elseIfBlock
                                 ? elseIfBlock.Statements
-                                : SyntaxFactory.SingletonList(elseIfStmt.Statement));
+                                : SyntaxFactory.SingletonList(elseIfStmt.Statement), semanticModel); // semanticModelを渡す
                             elseClause = elseIfStmt.Else;
                             depth--;
                             DeleteCondition();
@@ -103,9 +171,10 @@ namespace visualizeApp.Services
                         else
                         {
                             isElse = true;
+                            // 再帰呼び出しにもsemanticModelを渡す
                             AnalyzeStatements(elseClause.Statement is BlockSyntax elseBlock
                                 ? elseBlock.Statements
-                                : SyntaxFactory.SingletonList(elseClause.Statement));
+                                : SyntaxFactory.SingletonList(elseClause.Statement), semanticModel); // semanticModelを渡す
                             depth--;
                             DeleteCondition();
                             depth++;
@@ -114,7 +183,7 @@ namespace visualizeApp.Services
                         }
                     }
                     depth = tmp;
-                    DeleteCondition();
+                    DeleteCondition(); // このDeleteConditionはelse/else ifブロックの後に呼ばれるべきか、ロジック要確認
                 }
                 else if (statement is ForStatementSyntax forStmt)
                 {
@@ -124,9 +193,10 @@ namespace visualizeApp.Services
                     SaveCondition("loop");
                     id++;
                     depth++;
+                    // 再帰呼び出しにもsemanticModelを渡す
                     AnalyzeStatements(forStmt.Statement is BlockSyntax forBlock
                         ? forBlock.Statements
-                        : SyntaxFactory.SingletonList(forStmt.Statement));
+                        : SyntaxFactory.SingletonList(forStmt.Statement), semanticModel); // semanticModelを渡す
                     depth--;
                     DeleteCondition();
                 }
@@ -137,14 +207,17 @@ namespace visualizeApp.Services
                     SaveCondition("loop");
                     id++;
                     depth++;
+                    // 再帰呼び出しにもsemanticModelを渡す
                     AnalyzeStatements(whileStmt.Statement is BlockSyntax forBlock
                         ? forBlock.Statements
-                        : SyntaxFactory.SingletonList(whileStmt.Statement));
+                        : SyntaxFactory.SingletonList(whileStmt.Statement), semanticModel); // semanticModelを渡す
                     depth--;
                     DeleteCondition();
                 }
             }
         }
+
+        // staticメソッド群は変更なし（SemanticModelを直接使わないため）
         static void SaveCondition(string type)
         {
             if (preId.Count - 1 < depth)
@@ -170,34 +243,33 @@ namespace visualizeApp.Services
                 }
             }
         }
+
         static void CreateLink(string type)
         {
-            if (id != 0)
+            if (id == 0) return;
+
+            if (preId.Count - 1 == depth)
             {
-                if (preId.Count - 1 == depth)
+                jsonHandler.AddLink(preId[depth], id, "normal", currentClassName, currentMethodName);
+            }
+            else
+            {
+                if (preType[depth - 1] == "if" || preType[depth - 1] == "else if")
                 {
-                    jsonHandler.AddLink(preId[depth], id, "normal");
+                    if (type == "else if" || isElse)
+                    {
+                        jsonHandler.AddLink(preId[depth - 1], id, "false", currentClassName, currentMethodName);
+                    }
+                    else if (type != "else")
+                    {
+                        jsonHandler.AddLink(preId[depth - 1], id, "true", currentClassName, currentMethodName);
+                    }
                 }
-                else
+                else if (preType[depth - 1] == "loop")
                 {
-                    if (preType[depth - 1] == "if" || preType[depth - 1] == "else if")
-                    {
-                        if (type == "else if" || isElse)
-                        {
-                            jsonHandler.AddLink(preId[depth - 1], id, "false");
-                        }
-                        else if (type != "else")
-                        {
-                            jsonHandler.AddLink(preId[depth - 1], id, "true");
-                        }
-                    }
-                    else if (preType[depth - 1] == "loop")
-                    {
-                        jsonHandler.AddLink(preId[depth - 1], id, "loop");
-                    }
+                    jsonHandler.AddLink(preId[depth - 1], id, "loop", currentClassName, currentMethodName);
                 }
             }
         }
-
     }
 }

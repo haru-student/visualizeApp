@@ -2,15 +2,6 @@
   "Nodes": [
     {
       "Id": 0,
-      "Type": "start",
-      "Label": "start",
-      "Class": "temp",
-      "Method": "temp",
-      "Depth": 0,
-      "LineNumber": 0
-    },
-    {
-      "Id": 0,
       "Type": "loop",
       "Label": "i = 1;i <= 100;i++",
       "Class": "FizzBuzz",
@@ -20,103 +11,126 @@
     },
     {
       "Id": 1,
-      "Type": "if",
-      "Label": "i % 3 == 0 && i % 5 == 0",
+      "Type": "methodCall",
+      "Label": "FizzBuzz.judgeFizzBuzz",
       "Class": "FizzBuzz",
       "Method": "Main",
       "Depth": 1,
       "LineNumber": 9
     },
     {
-      "Id": 2,
+      "Id": 0,
+      "Type": "if",
+      "Label": "i % 3 == 0 && i % 5 == 0",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz",
+      "Depth": 0,
+      "LineNumber": 14
+    },
+    {
+      "Id": 1,
       "Type": "expression",
       "Label": "Console.WriteLine(\"FizzBuzz\")",
       "Class": "FizzBuzz",
-      "Method": "Main",
-      "Depth": 2,
-      "LineNumber": 11
+      "Method": "judgeFizzBuzz",
+      "Depth": 1,
+      "LineNumber": 16
     },
     {
-      "Id": 3,
+      "Id": 2,
       "Type": "else if",
       "Label": "i % 3 == 0",
       "Class": "FizzBuzz",
-      "Method": "Main",
-      "Depth": 2,
-      "LineNumber": 9
+      "Method": "judgeFizzBuzz",
+      "Depth": 1,
+      "LineNumber": 14
     },
     {
-      "Id": 4,
+      "Id": 3,
       "Type": "expression",
       "Label": "Console.WriteLine(\"Fizz\")",
       "Class": "FizzBuzz",
-      "Method": "Main",
-      "Depth": 3,
-      "LineNumber": 15
+      "Method": "judgeFizzBuzz",
+      "Depth": 2,
+      "LineNumber": 20
     },
     {
-      "Id": 5,
+      "Id": 4,
       "Type": "else if",
       "Label": "i % 5 == 0",
       "Class": "FizzBuzz",
-      "Method": "Main",
+      "Method": "judgeFizzBuzz",
+      "Depth": 2,
+      "LineNumber": 14
+    },
+    {
+      "Id": 5,
+      "Type": "expression",
+      "Label": "Console.WriteLine(\"Buzz\")",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz",
       "Depth": 3,
-      "LineNumber": 9
+      "LineNumber": 24
     },
     {
       "Id": 6,
       "Type": "expression",
-      "Label": "Console.WriteLine(\"Buzz\")",
-      "Class": "FizzBuzz",
-      "Method": "Main",
-      "Depth": 4,
-      "LineNumber": 19
-    },
-    {
-      "Id": 7,
-      "Type": "expression",
       "Label": "Console.WriteLine(i)",
       "Class": "FizzBuzz",
-      "Method": "Main",
-      "Depth": 4,
-      "LineNumber": 23
+      "Method": "judgeFizzBuzz",
+      "Depth": 3,
+      "LineNumber": 28
     }
   ],
   "Links": [
     {
       "Node1": 0,
       "Node2": 1,
-      "Type": "loop"
+      "Type": "loop",
+      "Class": "FizzBuzz",
+      "Method": "Main"
     },
     {
-      "Node1": 1,
+      "Node1": 0,
+      "Node2": 1,
+      "Type": "true",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz"
+    },
+    {
+      "Node1": 0,
       "Node2": 2,
-      "Type": "true"
+      "Type": "false",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz"
     },
     {
-      "Node1": 1,
+      "Node1": 2,
       "Node2": 3,
-      "Type": "false"
+      "Type": "true",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz"
     },
     {
-      "Node1": 3,
+      "Node1": 2,
       "Node2": 4,
-      "Type": "true"
+      "Type": "false",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz"
     },
     {
-      "Node1": 3,
+      "Node1": 4,
       "Node2": 5,
-      "Type": "false"
+      "Type": "true",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz"
     },
     {
-      "Node1": 5,
+      "Node1": 4,
       "Node2": 6,
-      "Type": "true"
-    },
-    {
-      "Node1": 5,
-      "Node2": 7,
-      "Type": "false"
+      "Type": "false",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz"
     }
   ]
 }

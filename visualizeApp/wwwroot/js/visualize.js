@@ -1,26 +1,16 @@
-﻿function loadPADDiagram(jsonUrl, callback) {
-    fetch(jsonUrl)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            // null または undefined の場合は空オブジェクトを提供
-            callback(data || { Nodes: [], Links: [] });
-        })
-        .catch(error => {
-            console.error("JSONデータ読み込みエラー:", error);
-            // エラーが発生した場合でも、空のデータ構造でコールバックを呼び出す
-            callback({ Nodes: [], Links: [] });
-        });
-}
+﻿function visualize(data, posX=0, posY=0) {
+    const svg = d3.select("#pad-layer")
+    let x = posX;
+    let y = posY + 50;
 
-function visualize(data) {
-    const svg = d3.select("svg");
-    let x = 0;
-    let y = 0;
+    svg.append("line")
+        .attr("x1", posX)
+        .attr("y1", posY + 20)
+        .attr("x2", x)
+        .attr("y2", y)
+        .attr("stroke", "black")
+        .attr("stroke-width", 1);
+
     let deepestY = [];
     let height = 40;
     let minWidth = 100;
@@ -389,7 +379,3 @@ function visualize(data) {
         return Math.max(minWidth, width);
     }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-    loadPADDiagram("/data/padDiagram.json", visualize);
-});

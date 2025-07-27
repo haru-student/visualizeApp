@@ -18,17 +18,35 @@ namespace visualizeApp.Controllers
         
         public IActionResult Index()
         {
+            var padFile = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "data", "padDiagram.json");
+            var callGraphFile = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "data", "callGraph.json");
+
+            // 親フォルダが無ければ作成
+            var dir = Path.GetDirectoryName(padFile);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            dir = Path.GetDirectoryName(callGraphFile);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            // ファイルの中身を "null" に初期化（なければ作成）
+            System.IO.File.WriteAllText(padFile, "null");
+            System.IO.File.WriteAllText(callGraphFile, "null");
+
             return View();
         }
 
         [HttpPost]
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> ProcessFile(IFormFile csFile)
         {
             if (csFile == null || csFile.Length == 0)
             {
-                ModelState.AddModelError("", "Please upload a valid C# file.");
-                return View("Index");
+                return Content("無効なファイルです。");
             }
 
             string fileContent;
@@ -36,10 +54,11 @@ namespace visualizeApp.Controllers
             {
                 fileContent = await reader.ReadToEndAsync();
             }
+
             CodeAnalysis roslyn = new CodeAnalysis();
             roslyn.Entry(fileContent);
 
-            return View("Shapes");
+            return Content("ファイルを正常に処理しました。");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

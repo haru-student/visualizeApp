@@ -24,3 +24,14 @@ body {
 #code-editor {
     height: 100vh; /* Monaco Editor‚Ì‚‚³ */
 }
+
+#graph-layer {
+    position: absolute;
+    z-index: 1;
+}
+
+#pad-layer {
+    position: absolute;
+    z-index: 2;
+    pointer-events: none; /* ©ƒNƒŠƒbƒN‚ğ’Ê‰ß‚³‚¹‚é */
+}

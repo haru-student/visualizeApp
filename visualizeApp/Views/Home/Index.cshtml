@@ -1,85 +1,43 @@
-﻿@using System.IO
-@{
-    ViewData["Title"] = "ファイルのアップロード";
-    string webRootPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-    string dataPath = System.IO.Path.Combine(webRootPath, "data", "padDiagram.json");
-    bool padDiagramExists = System.IO.File.Exists(dataPath);
+﻿@{
+    ViewData["Title"] = "コードの可視化";
 }
+
+<div class="form-check form-check-inline">
+    <input class="form-check-input" type="checkbox" id="toggleEditor" checked onchange="updateView()">
+    <label class="form-check-label" for="toggleEditor">エディターを表示</label>
+</div>
+<div class="form-check form-check-inline">
+    <input class="form-check-input" type="checkbox" id="toggleVisual" checked onchange="updateView()">
+    <label class="form-check-label" for="toggleVisual">可視化を表示</label>
+</div>
+
 <div class="row">
     <div class="col-4">
         <div id="code-editor"></div>
     </div>
     <div class="col-8">
-        @if (padDiagramExists)
-        {
+        <!-- アップロード用 -->
+        <div id="uploadSection" style="display: none;">
             <div class="d-flex justify-content-center align-items-center vh-100">
                 <div class="text-center">
-                    <h2 class="mb-5">csファイルをアップロードしてください</h2>
-                    <form asp-action="ProcessFile" method="post" enctype="multipart/form-data">
-                        <div class="mb-5">
-                            <input type="file" id="csFile" name="csFile" accept=".cs" required />
-                        </div>
+                    <h2 class="mb-5">コードを書くかファイルをアップロードしてください。</h2>
+                    <form id="uploadForm">
+                        <input type="file" id="csFile" name="csFile" accept=".cs" required />
                         <button type="submit" class="btn btn-primary">アップロード</button>
                     </form>
+                    <div id="uploadResult" class="mt-3"></div>
                 </div>
             </div>
-        }
-        else
-        {
-            <svg class="vh-100" width="5000" height="5000"></svg>
-        }
+        </div>
+
+        <!-- 可視化用 -->
+        <div class="position-relative" id="visualSection" style="width: 8000px; height: 6000px;">
+            <svg id="graph-layer" class="position-absolute top-0 start-0 w-100 h-100" width="800" height="600"></svg>
+            <svg id="pad-layer" class="position-absolute top-0 start-0 w-100 h-100" width="8000" height="6000"></svg>
+        </div>
+
     </div>
 </div>
 
-<script>
-    require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs' } });
-
-    require(['vs/editor/editor.main'], function () {
-        var editor = monaco.editor.create(document.getElementById('code-editor'), {
-            // value: `class Hello {\n  public static void Main() {\n    Console.WriteLine("Hello, Monaco!");\n  }\n}`,
-            language: 'csharp', // C# 言語モード
-            theme: 'vs-dark', // ダークテーマ
-            automaticLayout: true
-        });
-
-        let highlightDecoration = []; // ハイライトを管理する配列
-
-        function highlightLine(lineNumber) {
-            var model = editor.getModel();
-            if (!model || model.getLineCount() < 3) {
-                // 行数が3未満なら既存のハイライトを消して終了
-                highlightDecoration = editor.deltaDecorations(highlightDecoration, []);
-                return;
-            }
-
-            var maxColumn = model.getLineMaxColumn(lineNumber);
-            highlightDecoration = editor.deltaDecorations(highlightDecoration, [
-                {
-                    range: new monaco.Range(lineNumber, 1, lineNumber, maxColumn),
-                    options: {
-                        isWholeLine: true,
-                        className: 'highlight-line'
-                    }
-                }
-            ]);
-        }
-
-        // 初期状態で3行以上あるなら3行目をハイライト
-        highlightLine(3);
-        // コンテンツが変更されるたびに、3行以上なら3行目をハイライト
-        editor.onDidChangeModelContent(function () {
-            highlightLine(3);
-        });
-        //変更が加えられた部分のみを取得
-        // editor.onDidChangeModelContent(function (e) {
-        //     console.log("Editor content has changed:", e);
-        // });
-        // コンテンツが変更されるたびにコード全体を取得
-        editor.onDidChangeModelContent(function (e) {
-            var fullCode = editor.getValue();  // コード全体を取得
-            console.log("Editor content changed:");
-            console.log(fullCode);  // 変更された後のコード全体を表示
-        });
-    });
-</script>
-<script src="~/js/visualize.js"></script>
+<script src="/js/callGraph.js" async></script>
+<script src="/js/visualize.js" async></script>
