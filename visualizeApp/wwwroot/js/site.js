@@ -68,14 +68,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 ]);
             }
 
-            highlightLine(3);
-
             // 編集時のデバウンス送信
             let debounceTimer;
             editor.onDidChangeModelContent(function () {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(async () => {
                     const editedCode = editor.getValue();
+                    if (editedCode.trim() === "") {
+                        document.getElementById("uploadButton").disabled = false;
+                        document.getElementById("uploadSection").style.display = "block";
+                        document.getElementById("visualSection").style.display = "none";
+                        return;
+                    }
                     const blob = new Blob([editedCode], { type: "text/plain" });
                     const file = new File([blob], "edited.cs");
 
@@ -116,6 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        document.getElementById("uploadButton").disabled = true;
+
         const file = fileInput.files[0];
 
         // 読み込んでエディタに表示
@@ -137,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
 callGraphData = "";
 // padDiagram.json の存在チェックと可視化
 function updateCallGraph() {
-    console.log("called");
     fetch("/data/callGraph.json", { cache: "no-store" })
         .then(res => {
             if (!res.ok) throw new Error();
@@ -150,16 +155,17 @@ function updateCallGraph() {
                 const newData = JSON.stringify(data);
                 if (newData != callGraphData) {
                     d3.select("#graph-layer").selectAll("*").remove();
+                    d3.select("#pad-layer").selectAll("*").remove();
                     drawCallGraph(data);
                     callGraphData = newData;
                 }
             }
             else {
-                document.getElementById("uploadSection").style.display = "block";
-                document.getElementById("visualSection").style.display = "none";
+ 
             }
         })
         .catch(() => {
+            document.getElementById("uploadButton").disabled = false;
             document.getElementById("uploadSection").style.display = "block";
             document.getElementById("visualSection").style.display = "none";
         });
@@ -173,7 +179,7 @@ function getPadData(className, methodName, posX, posY) {
     const svg = d3.select("#pad-layer");
 
     if (displayedMethods.has(key)) {
-        svg.select(`g[data-method="${key}"]`).remove();
+        d3.select("#pad-layer").selectAll("*").remove();
         displayedMethods.delete(key);
         return;
     }
@@ -189,17 +195,12 @@ function getPadData(className, methodName, posX, posY) {
             if (filtered.Nodes.length === 0) {
                 throw new Error("対象のノードが存在しません");
             }
-
-            //document.getElementById("uploadSection").style.display = "none";
-            //document.getElementById("visualSection").style.display = "block";
-
+            d3.select("#pad-layer").selectAll("*").remove();
             visualize(filtered, posX, posY);
             displayedMethods.add(key);
         })
         .catch(err => {
             console.error(err);
-            //document.getElementById("uploadSection").style.display = "block";
-            //document.getElementById("visualSection").style.display = "none";
         });
 }
 

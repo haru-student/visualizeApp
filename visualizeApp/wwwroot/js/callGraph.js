@@ -10,7 +10,6 @@
         const node = svg.append("g")
             .attr("transform", `translate(${50}, ${30})`)
             .on("click", () => {
-                console.log("クリックされたメソッド:", data.nodes[0].label);
                 const [className, methodName] = data.nodes[0].label.split(/\./); 
                 getPadData(className, methodName, 0, 0);
             });
@@ -59,6 +58,7 @@
         .selectAll("line")
         .data(data.links)
         .enter().append("line")
+        .classed("nodeStyle", true)
         .attr("marker-end", "url(#arrowhead)");
 
 
@@ -68,8 +68,8 @@
         .selectAll("g")
         .data(data.nodes)
         .enter().append("g")
+        .classed("nodeStyle", true)
         .on("click", (event, d) => {
-            console.log("クリックされたメソッド:", d.label);
             const [className, methodName] = d.label.split(/\./);  
             getPadData(className, methodName, d.x, d.y);
             //d.fx = 50;

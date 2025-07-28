@@ -36,8 +36,6 @@
         let connect = connects[0];
         let source = nodes[connect.Node1];
         let target = nodes[connect.Node2];
-        console.log(connect.Type);
-        console.log(target.Type);
         if (connect.Type == "normal") {
             if (target.Type == "loop") {
                 let tmpX = source.x;

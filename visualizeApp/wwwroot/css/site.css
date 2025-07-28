@@ -35,3 +35,7 @@ body {
     z-index: 2;
     pointer-events: none; /* ©ƒNƒŠƒbƒN‚ğ’Ê‰ß‚³‚¹‚é */
 }
+
+.nodeStyle {
+    cursor: default;
+}
