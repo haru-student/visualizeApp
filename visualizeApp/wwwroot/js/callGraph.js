@@ -1,4 +1,5 @@
 ﻿function drawCallGraph(data) {
+    window.graphData = data;
     const svg = d3.select("#graph-layer")
     const width = +svg.attr("width") || 800;
     const height = +svg.attr("height") || 600;
@@ -9,10 +10,6 @@
         // ノードが1つだけのときは中央に長方形で表示
         const node = svg.append("g")
             .attr("transform", `translate(${50}, ${30})`)
-            .on("click", () => {
-                const [className, methodName] = data.nodes[0].label.split(/\./); 
-                getPadData(className, methodName, 0, 0);
-            });
 
         node.append("rect")
             .attr("x", -40)
@@ -28,6 +25,9 @@
             .attr("text-anchor", "middle")
             .attr("dy", "0.35em")
             .text(data.nodes[0].label.split('.').pop());
+        
+        window.displayedMethods = data.nodes[0].label;
+        getPadData(50, 30);
 
         return;
     }
@@ -70,15 +70,12 @@
         .enter().append("g")
         .classed("nodeStyle", true)
         .on("click", (event, d) => {
-            const [className, methodName] = d.label.split(/\./);  
-            getPadData(className, methodName, d.x, d.y);
-            //d.fx = 50;
-            //d.fy = 30;
-
-            //simulation.alpha(1).restart();
-
-            //const [className, methodName] = d.label.split(/\./);
-            //getPadData(className, methodName, 0, 0);
+            if(displayedMethods == null)
+              openPadForNode(d);
+            else if(displayedMethods != d.label)
+              switchPad(d);
+            else
+              resetGraphLayout();
         });
 
     node.append("rect")
@@ -107,8 +104,7 @@
         node
             .attr("transform", d => `translate(${d.x},${d.y})`);
     });
-
-
+    window.currentSimulation = simulation;
 }
 
 function offsetLine(source, target, offset = 40) {
@@ -122,3 +118,81 @@ function offsetLine(source, target, offset = 40) {
     };
 }
 
+function openPadForNode(d) {
+  d.fx = 100;
+  d.fy = 200;
+
+  const nodes = window.graphData.nodes; 
+
+  // 他ノードを散らす
+  nodes.forEach(n => {
+    if (n.id !== d.id) {
+      n.fx = n.fx;
+      n.fy = 30 + Math.random() * 170;
+    }
+  });
+  displayedMethods = d.label;
+  getPadData(d.fx, d.fy);
+  d3.select("#graph-layer").selectAll("line")
+      .filter(l => l.source.id === d.id)
+      .style("display", "none");
+}
+
+function switchPad(newNode) {
+  const nodes = window.graphData.nodes; 
+  nodes.forEach(n => {
+    if (n.id !== newNode.id) {
+      n.fx = null;
+      n.fy = null;
+    }
+  });
+  window.methodCallLines.forEach(line => line.remove()); // DOMから削除
+  window.methodCallLines.clear();                        // 参照もクリア
+  d3.select("#graph-layer").selectAll("line")
+      .style("display", null);
+
+  d3.select("#pad-layer").selectAll("*").remove();
+  openPadForNode(newNode);
+}
+
+function resetGraphLayout() {
+  d3.select("#pad-layer").selectAll("*").remove();
+  displayedMethods = null;
+  const nodes = window.graphData.nodes;
+  nodes.forEach(n => {
+    n.fx = null;
+    n.fy = null;
+  });
+  window.methodCallLines.forEach(line => line.remove()); // DOMから削除
+  window.methodCallLines.clear();                        // 参照もクリア
+  d3.select("#graph-layer").selectAll("line")
+      .style("display", null);
+
+  // force を再加熱して再レイアウト
+  window.currentSimulation.alpha(1).restart();
+}
+
+function drawMethodCallLink(label, x, y) {
+  const svg = d3.select("#graph-layer");
+  if (!window.methodCallLines) window.methodCallLines = new Map();
+  const targetNodeSel = svg.selectAll("g.nodeStyle").filter(d => d.label === label);
+  if (targetNodeSel.empty()) return;
+
+  const line = svg.append("line")
+    .attr("stroke", "rgba(0,0,0,1)")
+    .attr("stroke-width", 2)
+    .attr("marker-end", "url(#arrowhead)");
+
+  window.methodCallLines.set(label, line);
+
+  // drawCallGraph と同じく tick イベントで毎回座標更新
+  window.currentSimulation.on("tick.drawMethodCall_" + label, () => {
+    const targetNode = targetNodeSel.datum(); // 最新座標を参照
+    const targetOffset = offsetLine({ x, y }, targetNode, 40);
+    line
+      .attr("x1", x)
+      .attr("y1", y)
+      .attr("x2", targetOffset.x)
+      .attr("y2", targetOffset.y);
+  });
+}

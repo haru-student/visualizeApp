@@ -97,7 +97,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         console.error("サーバーからの応答が不正です");
                         return;
                     }
-
                     updateCallGraph();
                     const result = await response.text();
                     document.getElementById('uploadResult').innerHTML = result;
@@ -159,9 +158,22 @@ function updateCallGraph() {
                     drawCallGraph(data);
                     callGraphData = newData;
                 }
+                else {
+                    if(data.nodes.length > 1){
+                        getPadData(100, 200);
+                    }
+                    else if(data.nodes.length === 1){
+                        getPadData(50, 30);
+                    }
+                    else{
+                        document.getElementById("uploadSection").style.display = "block";
+                        document.getElementById("visualSection").style.display = "none";
+                    }
+                }
             }
             else {
- 
+                 document.getElementById("uploadSection").style.display = "block";
+                document.getElementById("visualSection").style.display = "none";
             }
         })
         .catch(() => {
@@ -172,15 +184,15 @@ function updateCallGraph() {
 }
 
 //PADで標示しているメソッド
-let displayedMethods = new Set();
+window.displayedMethods = null;
+window.displayedPAD = "";
 //jsonから必要なPADデータの取得
-function getPadData(className, methodName, posX, posY) {
-    const key = `${className}.${methodName}`;
+function getPadData(posX, posY) {
     const svg = d3.select("#pad-layer");
 
-    if (displayedMethods.has(key)) {
+    if (displayedMethods == null) {
         d3.select("#pad-layer").selectAll("*").remove();
-        displayedMethods.delete(key);
+        displayedPAD = "";
         return;
     }
 
@@ -190,14 +202,20 @@ function getPadData(className, methodName, posX, posY) {
             return res.json();
         })
         .then(data => {
+            const [className, methodName] = displayedMethods.split(/\./);
             const filtered = extractMethodDiagram(data, className, methodName);
 
             if (filtered.Nodes.length === 0) {
                 throw new Error("対象のノードが存在しません");
             }
+            const newPAD = JSON.stringify(data);
+            if (newPAD === window.displayedPAD) {
+                console.log("同じPADなので再描画しません");
+                return;
+            }
             d3.select("#pad-layer").selectAll("*").remove();
             visualize(filtered, posX, posY);
-            displayedMethods.add(key);
+            window.displayedPAD = newData;
         })
         .catch(err => {
             console.error(err);
