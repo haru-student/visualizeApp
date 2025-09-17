@@ -59,6 +59,7 @@
         .data(data.links)
         .enter().append("line")
         .classed("nodeStyle", true)
+        .attr("class", "graph-link") 
         .attr("marker-end", "url(#arrowhead)");
 
 
@@ -70,9 +71,9 @@
         .enter().append("g")
         .classed("nodeStyle", true)
         .on("click", (event, d) => {
-            if(displayedMethods == null)
+            if(window.displayedMethods == null)
               openPadForNode(d);
-            else if(displayedMethods != d.label)
+            else if(window.displayedMethods != d.label)
               switchPad(d);
             else
               resetGraphLayout();
@@ -119,6 +120,7 @@ function offsetLine(source, target, offset = 40) {
 }
 
 function openPadForNode(d) {
+  console.log("openPadForNode", d);
   d.fx = 100;
   d.fy = 200;
 
@@ -131,40 +133,57 @@ function openPadForNode(d) {
       n.fy = 30 + Math.random() * 170;
     }
   });
-  displayedMethods = d.label;
+  window.displayedMethods = d.label;
   getPadData(d.fx, d.fy);
-  d3.select("#graph-layer").selectAll("line")
-      .filter(l => l.source.id === d.id)
-      .style("display", "none");
+  d3.select("#graph-layer").selectAll("line.graph-link")
+    .filter(l => l && l.source && l.source.id === d.id)
+    .style("display", "none");
+
+  window.currentSimulation.alpha(1).restart();
+  setTimeout(() => {
+    window.currentSimulation.alphaTarget(0); // 減衰を強制的に終わらせる
+    window.currentSimulation.stop();
+  }, 500); // ← 秒数はお好みで（200〜800msぐらい試すと良い）
 }
 
 function switchPad(newNode) {
+  console.log("switchPad", newNode);
   const nodes = window.graphData.nodes; 
   nodes.forEach(n => {
-    if (n.id !== newNode.id) {
       n.fx = null;
       n.fy = null;
-    }
   });
-  window.methodCallLines.forEach(line => line.remove()); // DOMから削除
-  window.methodCallLines.clear();                        // 参照もクリア
+  if(window.methodCallLines && window.methodCallLines.size > 0) {
+    window.methodCallLines.forEach(line => line.remove()); // DOMから削除
+    window.methodCallLines.clear();                        // 参照もクリア
+  }
   d3.select("#graph-layer").selectAll("line")
       .style("display", null);
-
+  window.displayedMethods = null;
+  displayedPAD = "";
   d3.select("#pad-layer").selectAll("*").remove();
   openPadForNode(newNode);
 }
 
 function resetGraphLayout() {
+  console.log("resetGraphLayout");
+  //PADを閉じる
+  window.displayedMethods = null;
   d3.select("#pad-layer").selectAll("*").remove();
-  displayedMethods = null;
+  window.displayedPAD = "";
+
+  //ノードの固定を解除
   const nodes = window.graphData.nodes;
   nodes.forEach(n => {
     n.fx = null;
     n.fy = null;
   });
-  window.methodCallLines.forEach(line => line.remove()); // DOMから削除
-  window.methodCallLines.clear();                        // 参照もクリア
+  if(window.methodCallLines && window.methodCallLines.size > 0) {
+    window.methodCallLines.forEach(line => line.remove()); // DOMから削除
+    window.methodCallLines.clear();                        // 参照もクリア
+  }
+
+  //コールグラフの再表示
   d3.select("#graph-layer").selectAll("line")
       .style("display", null);
 
@@ -177,8 +196,10 @@ function drawMethodCallLink(label, x, y) {
   if (!window.methodCallLines) window.methodCallLines = new Map();
   const targetNodeSel = svg.selectAll("g.nodeStyle").filter(d => d.label === label);
   if (targetNodeSel.empty()) return;
+  console.log("targetNodeSel", targetNodeSel.size(), targetNodeSel.datum());
 
   const line = svg.append("line")
+    .attr("class", "overlay-link")
     .attr("stroke", "rgba(0,0,0,1)")
     .attr("stroke-width", 2)
     .attr("marker-end", "url(#arrowhead)");
@@ -187,6 +208,7 @@ function drawMethodCallLink(label, x, y) {
 
   // drawCallGraph と同じく tick イベントで毎回座標更新
   window.currentSimulation.on("tick.drawMethodCall_" + label, () => {
+    console.log("tick.drawMethodCall", label);
     const targetNode = targetNodeSel.datum(); // 最新座標を参照
     const targetOffset = offsetLine({ x, y }, targetNode, 40);
     line
@@ -195,4 +217,13 @@ function drawMethodCallLink(label, x, y) {
       .attr("x2", targetOffset.x)
       .attr("y2", targetOffset.y);
   });
+  if (window.currentSimulation) {
+    window.currentSimulation.alpha(0.3).restart();
+
+    // 数百ms後に再び止める（動き続けないように）
+    setTimeout(() => {
+      window.currentSimulation.alphaTarget(0);
+      window.currentSimulation.stop();
+    }, 100);
+  }
 }

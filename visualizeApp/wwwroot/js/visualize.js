@@ -1,5 +1,7 @@
 ﻿function visualize(data, posX = 0, posY = 0) {
-  if(window.drawMethodCallLines && window.drawMethodCallLines.size > 0){
+  console.log("visualize", data, posX, posY);
+  if(window.methodCallLines && window.methodCallLines.size > 0){
+    console.log("既存のmethodCallLinesを削除します");
     window.methodCallLines.forEach(line => line.remove()); // DOMから削除
     window.methodCallLines.clear();                        // 参照もクリア
   }
@@ -29,7 +31,7 @@
     return;
   }
 
-  drawNode(x, y, minWidth, height, nodes[0].Label);
+  drawNode(x, y, minWidth, height, nodes[0].Label, nodes[0].LineNumber);
   saveCordinates(nodes[0], x, y, minWidth, height);
   x += minWidth / 2;
   y[0] += height + lenLink;
@@ -53,7 +55,7 @@
           }
         }
         tmpY += lenLink;
-        drawNode(tmpX, tmpY, minWidth, 120, target.Label);
+        drawNode(tmpX, tmpY, minWidth, 120, target.Label, target.LineNumber);
         saveCordinates(target, tmpX, tmpY, minWidth, 120);
         svg
           .append("line")
@@ -71,7 +73,7 @@
           }
         }
         tmpY += lenLink;
-        drawNode(0, tmpY, minWidth, height, target.Label);
+        drawNode(0, tmpY, minWidth, height, target.Label, target.LineNumber);
         saveCordinates(target, 0, tmpY, minWidth, height);
       } else if (target.Type == "if") {
         let tmpX;
@@ -101,7 +103,7 @@
             }
           }
           let ifHeight = deepest - target.y + lenLink / 2;
-          drawIfNode(target.x, target.y, minWidth, ifHeight, target.Label);
+          drawIfNode(target.x, target.y, minWidth, ifHeight, target.Label, target.lineNumber);
           saveCordinates(target, target.x, target.y, minWidth * 2, ifHeight);
         }
       } else {
@@ -119,7 +121,7 @@
           }
         }
         tmpY += lenLink / 2;
-        drawNode(tmpX, tmpY, tmpWidth, height, target.Label);
+        drawNode(tmpX, tmpY, tmpWidth, height, target.Label, target.LineNumber);
         saveCordinates(target, tmpX, tmpY, tmpWidth, height);
       }
     } else if (connect.Type == "loop") {
@@ -139,13 +141,13 @@
             }
           }
           let ifHeight = deepest - target.y + lenLink / 2;
-          drawIfNode(target.x, target.y, minWidth, ifHeight, target.Label);
+          drawIfNode(target.x, target.y, minWidth, ifHeight, target.Label, target.LineNumber);
           saveCordinates(target, target.x, target.y, minWidth * 2, ifHeight);
         }
       } else if (target.Type == "loop") {
         let tmpX = x + target.Depth * (minWidth + lenLink);
         let tmpY = source.y + source.height / 2;
-        drawNode(tmpX, tmpY, minWidth, 120, target.Label);
+        drawNode(tmpX, tmpY, minWidth, 120, target.Label, target.LineNumber);
         saveCordinates(target, tmpX, tmpY, minWidth, 120);
         svg
           .append("line")
@@ -159,14 +161,14 @@
         let tmpX = source.x + source.width + lenLink / 2;
         let tmpY = source.y + source.height / 2;
         let tmpWidth = decideWidth(target.Label, minWidth);
-        drawNode(tmpX, tmpY, tmpWidth, height, target.Label);
+        drawNode(tmpX, tmpY, tmpWidth, height, target.Label, target.LineNumber);
         saveCordinates(target, tmpX, tmpY, tmpWidth, height);
       }
     } else if (connect.Type == "true") {
       if (target.Type == "for") {
         let tmpX = source.x + source.width + lenLink / 2;
         let tmpY = source.y;
-        drawNode(tmpX, tmpY, minWidth, 120, target.Label);
+        drawNode(tmpX, tmpY, minWidth, 120, target.Label, target.LineNumber);
         saveCordinates(target, tmpX, tmpY, minWidth, 120);
         svg
           .append("line")
@@ -192,14 +194,14 @@
             }
           }
           let ifHeight = deepest - target.y + lenLink / 2;
-          drawIfNode(target.x, target.y, minWidth, ifHeight, target.Label);
+          drawIfNode(target.x, target.y, minWidth, ifHeight, target.Label, target.LineNumber);
           saveCordinates(target, target.x, target.y, minWidth * 2, ifHeight);
         }
       } else {
         let tmpWidth = decideWidth(target.Label, minWidth);
         let tmpX = source.x + source.width + lenLink / 2;
         let tmpY = source.y;
-        drawNode(tmpX, tmpY, tmpWidth, height, target.Label);
+        drawNode(tmpX, tmpY, tmpWidth, height, target.Label, target.LineNumber);
         saveCordinates(target, tmpX, tmpY, tmpWidth, height);
       }
     } else if (connect.Type == "false") {
@@ -219,13 +221,13 @@
             }
           }
           let ifHeight = deepest - target.y + lenLink / 2;
-          drawIfNode(target.x, target.y, minWidth, ifHeight, target.Label);
+          drawIfNode(target.x, target.y, minWidth, ifHeight, target.Label, target.LineNumber);
           saveCordinates(target, target.x, target.y, minWidth * 2, ifHeight);
         }
       } else if (target.Type == "loop") {
         let tmpX = source.x + source.width + lenLink / 2;
         let tmpY = source.y + source.height;
-        drawNode(tmpX, tmpY, minWidth, 120, target.Label);
+        drawNode(tmpX, tmpY, minWidth, 120, target.Label, target.LineNumber);
         saveCordinates(target, tmpX, tmpY, minWidth, 120);
         svg
           .append("line")
@@ -239,14 +241,13 @@
         let tmpWidth = decideWidth(target.Label, minWidth);
         let tmpX = source.x + source.width + lenLink / 2;
         let tmpY = source.y + source.height;
-        drawNode(tmpX, tmpY, tmpWidth, height, target.Label);
+        drawNode(tmpX, tmpY, tmpWidth, height, target.Label, target.LineNumber);
         saveCordinates(target, tmpX, tmpY, tmpWidth, height);
       }
     }
     deepestY[target.Depth] = target.y + target.height;
     drawLink(source, target, connect);
     if(target.Type == "methodCall"){
-      console.log("methodCall link:",target.Label, source.x, source.y, target.x, target.y);
       drawMethodCallLink(target.Label, target.x + target.width, target.y + target.height / 2);
     }
     connects.shift();
@@ -261,49 +262,84 @@
     connects.unshift(...filteredLinks);
   }
 
-  function drawNode(x, y, width, height, label) {
-    svg
-      .append("rect")
-      .attr("x", x)
-      .attr("y", y)
-      .attr("width", width)
-      .attr("height", height)
-      .attr("fill", "white")
-      .attr("stroke", "black")
-      .attr("stroke-width", 1);
-    svg
-      .append("text")
-      .attr("x", x + width / 2)
-      .attr("y", y + height / 2)
-      .attr("text-anchor", "middle")
-      .attr("dy", ".35em")
-      .text(label);
-  }
-  function drawIfNode(x, y, width, height, label) {
-    const points = [
-      [x, y],
-      [x, y + height],
-      [x + width * 2, y + height],
-      [x + 1.5 * width, y + height / 2],
-      [x + width * 2, y],
-    ]
-      .map(([px, py]) => `${px},${py}`)
-      .join(" ");
+function drawNode(x, y, width, height, label, lineNumber = 0) {
+  const g = svg.append("g")
+    .attr("class", "pad-node")
+    .on("mouseenter", function () {
+      d3.select(this).select("rect")
+        .attr("fill", "#ffff99"); // ホバー時の背景色
+      if (window.highlightLine && lineNumber) {
+        window.highlightLine(lineNumber);
+      }
+    })
+    .on("mouseleave", function () {
+      d3.select(this).select("rect")
+        .attr("fill", "white");
+      if (window.highlightLine) {
+        // ハイライト解除（空の range を適用）
+        window.editorInstance.deltaDecorations([], []);
+      }
+    });
 
-    svg
-      .append("polygon")
-      .attr("points", points)
-      .attr("fill", "white")
-      .attr("stroke", "black")
-      .attr("stroke-width", 1);
-    svg
-      .append("text")
-      .attr("x", x + width)
-      .attr("y", y + height / 2)
-      .attr("text-anchor", "middle")
-      .attr("dy", ".35em")
-      .text(label);
-  }
+  g.append("rect")
+    .attr("x", x)
+    .attr("y", y)
+    .attr("width", width)
+    .attr("height", height)
+    .attr("fill", "white")
+    .attr("stroke", "black")
+    .attr("stroke-width", 1);
+
+  g.append("text")
+    .attr("x", x + width / 2)
+    .attr("y", y + height / 2)
+    .attr("text-anchor", "middle")
+    .attr("dy", ".35em")
+    .text(label);
+}
+
+function drawIfNode(x, y, width, height, label, lineNumber = 0) {
+  const g = svg.append("g")
+    .attr("class", "pad-node if-node")
+    .on("mouseenter", function () {
+      d3.select(this).select("polygon")
+        .attr("fill", "#ffff99"); // ホバー時の背景色
+      if (window.highlightLine && lineNumber) {
+        window.highlightLine(lineNumber);
+      }
+    })
+    .on("mouseleave", function () {
+      d3.select(this).select("polygon")
+        .attr("fill", "white");
+      if (window.highlightLine) {
+        window.editorInstance.deltaDecorations([], []); // ハイライト解除
+      }
+    });
+
+  const points = [
+    [x, y],
+    [x, y + height],
+    [x + width * 2, y + height],
+    [x + 1.5 * width, y + height / 2],
+    [x + width * 2, y],
+  ]
+    .map(([px, py]) => `${px},${py}`)
+    .join(" ");
+
+  g.append("polygon")
+    .attr("points", points)
+    .attr("fill", "white")
+    .attr("stroke", "black")
+    .attr("stroke-width", 1);
+
+  g.append("text")
+    .attr("x", x + width)
+    .attr("y", y + height / 2)
+    .attr("text-anchor", "middle")
+    .attr("dy", ".35em")
+    .text(label);
+}
+
   function drawLink(source, target, link) {
     let x1, y1, x2, y2;
 

@@ -22,7 +22,7 @@ body {
 }
 
 #code-editor {
-    height: 100vh; /* Monaco Editor‚Ì‚‚³ */
+    height: 100vh;
 }
 
 #graph-layer {
@@ -33,9 +33,19 @@ body {
 #pad-layer {
     position: absolute;
     z-index: 2;
-    pointer-events: none; /* ©ƒNƒŠƒbƒN‚ğ’Ê‰ß‚³‚¹‚é */
+    pointer-events: none; 
+}
+#pad-layer rect,
+#pad-layer polygon,
+#pad-layer text {
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .nodeStyle {
     cursor: default;
+}
+
+.highlight-line {
+    background-color: rgba(255, 255, 0, 0.3); /* åŠé€æ˜ã®é»„è‰² */
 }

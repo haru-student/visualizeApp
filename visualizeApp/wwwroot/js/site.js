@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let highlightDecoration = [];
 
             function highlightLine(lineNumber) {
+                if (!lineNumber || lineNumber < 1) return;
                 const model = editor.getModel();
                 if (!model || model.getLineCount() < 3) {
                     highlightDecoration = editor.deltaDecorations(highlightDecoration, []);
@@ -67,6 +68,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 ]);
             }
+            // window.editorInstance.highlightLine = highlightLine;
+            window.highlightLine = highlightLine;
 
             // 編集時のデバウンス送信
             let debounceTimer;
@@ -98,8 +101,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
                     updateCallGraph();
-                    const result = await response.text();
-                    document.getElementById('uploadResult').innerHTML = result;
                 }, 1000);
             });
         });
@@ -159,13 +160,13 @@ function updateCallGraph() {
                     callGraphData = newData;
                 }
                 else {
-                    if(data.nodes.length > 1){
+                    if(data.nodes.length > 1 && window.displayedMethods != null){
                         getPadData(100, 200);
                     }
-                    else if(data.nodes.length === 1){
+                    else if(data.nodes.length === 1 && window.displayedMethods != null){
                         getPadData(50, 30);
                     }
-                    else{
+                    else if(data.nodes.length === 0){
                         document.getElementById("uploadSection").style.display = "block";
                         document.getElementById("visualSection").style.display = "none";
                     }
@@ -190,9 +191,9 @@ window.displayedPAD = "";
 function getPadData(posX, posY) {
     const svg = d3.select("#pad-layer");
 
-    if (displayedMethods == null) {
+    if (window.displayedMethods == null) {
         d3.select("#pad-layer").selectAll("*").remove();
-        displayedPAD = "";
+        window.displayedPAD = "";
         return;
     }
 
@@ -202,20 +203,20 @@ function getPadData(posX, posY) {
             return res.json();
         })
         .then(data => {
-            const [className, methodName] = displayedMethods.split(/\./);
+            const [className, methodName] = window.displayedMethods.split(/\./);
             const filtered = extractMethodDiagram(data, className, methodName);
 
             if (filtered.Nodes.length === 0) {
                 throw new Error("対象のノードが存在しません");
             }
-            const newPAD = JSON.stringify(data);
+            const newPAD = JSON.stringify(filtered);
             if (newPAD === window.displayedPAD) {
                 console.log("同じPADなので再描画しません");
                 return;
             }
             d3.select("#pad-layer").selectAll("*").remove();
             visualize(filtered, posX, posY);
-            window.displayedPAD = newData;
+            window.displayedPAD = newPAD;
         })
         .catch(err => {
             console.error(err);
@@ -237,4 +238,3 @@ function extractMethodDiagram(fullDiagram, className, methodName) {
         Links: links
     };
 }
-
