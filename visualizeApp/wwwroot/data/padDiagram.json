@@ -28,13 +28,22 @@
       "LineNumber": 11
     },
     {
+      "Id": 3,
+      "Type": "expression",
+      "Label": "Console.ReadLine(\"complete\")",
+      "Class": "FizzBuzz",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 12
+    },
+    {
       "Id": 0,
       "Type": "if",
       "Label": "i % 3 == 0 && i % 5 == 0",
       "Class": "FizzBuzz",
       "Method": "judgeFizzBuzz",
       "Depth": 0,
-      "LineNumber": 15
+      "LineNumber": 16
     },
     {
       "Id": 1,
@@ -43,7 +52,7 @@
       "Class": "FizzBuzz",
       "Method": "judgeFizzBuzz",
       "Depth": 1,
-      "LineNumber": 17
+      "LineNumber": 18
     },
     {
       "Id": 2,
@@ -52,7 +61,7 @@
       "Class": "FizzBuzz",
       "Method": "judgeFizzBuzz",
       "Depth": 1,
-      "LineNumber": 15
+      "LineNumber": 16
     },
     {
       "Id": 3,
@@ -61,7 +70,7 @@
       "Class": "FizzBuzz",
       "Method": "judgeFizzBuzz",
       "Depth": 2,
-      "LineNumber": 21
+      "LineNumber": 22
     },
     {
       "Id": 4,
@@ -70,7 +79,7 @@
       "Class": "FizzBuzz",
       "Method": "judgeFizzBuzz",
       "Depth": 2,
-      "LineNumber": 15
+      "LineNumber": 16
     },
     {
       "Id": 5,
@@ -79,7 +88,7 @@
       "Class": "FizzBuzz",
       "Method": "judgeFizzBuzz",
       "Depth": 3,
-      "LineNumber": 25
+      "LineNumber": 26
     },
     {
       "Id": 6,
@@ -88,7 +97,7 @@
       "Class": "FizzBuzz",
       "Method": "judgeFizzBuzz",
       "Depth": 3,
-      "LineNumber": 29
+      "LineNumber": 30
     }
   ],
   "Links": [
@@ -102,6 +111,13 @@
     {
       "Node1": 0,
       "Node2": 2,
+      "Type": "normal",
+      "Class": "FizzBuzz",
+      "Method": "Main"
+    },
+    {
+      "Node1": 2,
+      "Node2": 3,
       "Type": "normal",
       "Class": "FizzBuzz",
       "Method": "Main"

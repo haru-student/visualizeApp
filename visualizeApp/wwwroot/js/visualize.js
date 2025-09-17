@@ -1,7 +1,5 @@
 ﻿function visualize(data, posX = 0, posY = 0) {
-  console.log("visualize", data, posX, posY);
   if(window.methodCallLines && window.methodCallLines.size > 0){
-    console.log("既存のmethodCallLinesを削除します");
     window.methodCallLines.forEach(line => line.remove()); // DOMから削除
     window.methodCallLines.clear();                        // 参照もクリア
   }
@@ -22,7 +20,6 @@
   let height = 40;
   let minWidth = 100;
   const lenLink = 40;
-  deepestY.push(y + height);
   const nodes = data.Nodes;
   const links = data.Links;
 
@@ -30,17 +27,55 @@
     console.warn("No nodes found in the data");
     return;
   }
-
-  drawNode(x, y, minWidth, height, nodes[0].Label, nodes[0].LineNumber);
-  saveCordinates(nodes[0], x, y, minWidth, height);
-  x += minWidth / 2;
-  y[0] += height + lenLink;
-  let connects = links.filter(function (link) {
-    return link.Node1 == nodes[0].Id;
-  });
+  // let connects = links.filter(function (link) {
+  //   return link.Node1 == nodes[0].Id;
+  // });
+  let connects = [];
+  if(nodes[0].Type === "if"){
+    nodes[0].drawn = true;
+    saveCordinates(nodes[0], x, y, minWidth * 2, height);
+    let tmpLink = {
+      Node1: -1,
+      Node2: 0,
+      Type: "normal",
+      Class: nodes[0].Class,
+      Method: nodes[0].Method
+    };
+    connects.unshift(tmpLink);
+    deepestY.push(y + height);
+    saveCordinates(nodes[0], x, y, minWidth * 2, height);
+  } else if(nodes[0].Type === "loop"){
+    drawNode(x, y, minWidth, 120, nodes[0].Label, nodes[0].LineNumber);
+    svg
+      .append("line")
+      .attr("x1", x + 6)
+      .attr("y1", y)
+      .attr("x2", x + 6)
+      .attr("y2", y + 120)
+      .attr("stroke", "black")
+      .attr("stroke-width", 1);
+    saveCordinates(nodes[0], x, y, minWidth, 120);
+    deepestY.push(y + 120);
+  } else {
+    drawNode(x, y, minWidth, height, nodes[0].Label, nodes[0].LineNumber);
+    saveCordinates(nodes[0], x, y, minWidth, height);
+    deepestY.push(y + height);
+  }
+  if(nodes[0].Type == "methodCall"){
+    drawMethodCallLink(nodes[0].Label, nodes[0].x + nodes[0].width, nodes[0].y + nodes[0].height / 2);
+  }
+  let filteredLinks = links.filter((link) => link.Node1 === nodes[0].Id);
+  if (nodes[0].Type == "if" || nodes[0].Type == "else if") {
+    filteredLinks = filteredLinks.filter((link) => link.Type === "true");
+  } 
+  connects.unshift(...filteredLinks);
+  console.log(connects);
   while (connects.length > 0) {
     let connect = connects[0];
-    let source = nodes[connect.Node1];
+    let source;
+    if(connect.Node1 !== -1){
+      source = nodes[connect.Node1];
+    }
     let target = nodes[connect.Node2];
     if (connect.Type == "normal") {
       if (target.Type == "loop") {
@@ -77,7 +112,7 @@
         saveCordinates(target, 0, tmpY, minWidth, height);
       } else if (target.Type == "if") {
         let tmpX;
-        if (target.Depth == 0) {
+        if (target.Depth == 0 || connect.Node1 === -1) {
           tmpX = x;
         } else {
           tmpX = source.x;
@@ -89,6 +124,7 @@
           }
         }
         tmpY += lenLink / 2;
+        console.log(tmpY);
 
         if (!target.drawn) {
           nodes[target.Id].drawn = true;
@@ -121,6 +157,7 @@
           }
         }
         tmpY += lenLink / 2;
+        console.log(tmpY);
         drawNode(tmpX, tmpY, tmpWidth, height, target.Label, target.LineNumber);
         saveCordinates(target, tmpX, tmpY, tmpWidth, height);
       }
@@ -299,6 +336,7 @@ function drawNode(x, y, width, height, label, lineNumber = 0) {
 }
 
 function drawIfNode(x, y, width, height, label, lineNumber = 0) {
+  console.log("drawIfNode", x, y, width, height, label, lineNumber);
   const g = svg.append("g")
     .attr("class", "pad-node if-node")
     .on("mouseenter", function () {
@@ -342,36 +380,31 @@ function drawIfNode(x, y, width, height, label, lineNumber = 0) {
 
   function drawLink(source, target, link) {
     let x1, y1, x2, y2;
+    let sourceX = source ? source.x : x;
+    let sourceY = source ? source.y : y;
+    let sourceWidth = source ? source.width : 0;
+    let sourceHeight = source ? source.height : 0;
 
     if (link.Type === "loop") {
-      x1 = source.x + source.width;
-      y1 = source.y + source.height / 2;
+      x1 = sourceX + sourceWidth;
+      y1 = sourceY + sourceHeight / 2;
       x2 = target.x;
       y2 = target.y;
     } else if (link.Type === "true") {
-      x1 = source.x + source.width;
-      y1 = source.y;
+      x1 = sourceX + sourceWidth;
+      y1 = sourceY;
       x2 = target.x;
       y2 = target.y;
     } else if (link.Type === "false") {
-      x1 = source.x + source.width;
-      y1 = source.y + source.height;
+      x1 = sourceX + sourceWidth;
+      y1 = sourceY + sourceHeight;
       x2 = target.x;
       y2 = target.y;
     } else {
-      x1 = source.x;
-      y1 = source.y + source.height;
+      x1 = sourceX;
+      y1 = sourceY + sourceHeight;
       x2 = target.x;
       y2 = target.y;
-
-      if (source.Type === "start") {
-        x1 = source.x + source.width / 2;
-        y1 = source.y + source.height;
-      }
-      if (target.Type === "end") {
-        x2 = target.x + target.width / 2;
-        y2 = target.y;
-      }
     }
     svg
       .append("line")
