@@ -1,10 +1,13 @@
 ﻿function drawCallGraph(data) {
+    console.log("Edited code called", data);
     window.graphData = data;
     const svg = d3.select("#graph-layer")
     const width = +svg.attr("width") || 800;
     const height = +svg.attr("height") || 600;
 
     svg.selectAll("*").remove();
+
+    const color = createClassColorScale(data.nodes);
 
     if (data.nodes.length === 1) {
         // ノードが1つだけのときは中央に長方形で表示
@@ -17,7 +20,7 @@
             .attr("width", 80)
             .attr("height", 40)
             .attr("rx", 6)
-            .attr("fill", "#fff")
+            .attr("fill", "#fff") 
             .attr("stroke", "#333")
             .attr("stroke-width", 1.5);
 
@@ -31,7 +34,6 @@
 
         return;
     }
-
     // 複数ノードの場合はforceレイアウト
     const simulation = d3.forceSimulation(data.nodes)
         .force("link", d3.forceLink(data.links).id(d => d.id).distance(120))
@@ -85,7 +87,7 @@
         .attr("width", 80)
         .attr("height", 40)
         .attr("rx", 6)
-        .attr("fill", "#fff")
+        .attr("fill", d => color(getClassName(d))) 
         .attr("stroke", "#333")
         .attr("stroke-width", 1.5);
 
@@ -226,4 +228,55 @@ function drawMethodCallLink(label, x, y) {
       window.currentSimulation.stop();
     }, 100);
   }
+}
+
+function createClassColorScale(nodes, legendSelector = "#legend") {
+  // ノードのラベルからクラス名を抽出
+  const classNames = Array.from(new Set(nodes.map(d => getClassName(d))));
+
+  let brightColors;
+  if (classNames.length === 1) {
+    // ★ クラスが1つなら白を割り当てる
+    d3.select(legendSelector).classed("d-none", true);
+    return d3.scaleOrdinal()
+      .domain(classNames)
+      .range(["#ffffff"]); 
+  } else {
+    brightColors = classNames.map((_, i) => {
+      const c = d3.hsl(d3.interpolateRainbow(i / classNames.length));
+      c.l = Math.min(0.75, c.l + 0.25); // 明度を上げる
+      return c.formatHex();
+    });
+  }
+  // ← ここでちゃんと scaleOrdinal を作る
+  const color = d3.scaleOrdinal()
+    .domain(classNames)
+    .range(brightColors);
+  d3.select(legendSelector).classed("d-none", false);
+  // 凡例描画
+  const legend = d3.select(legendSelector).html("");
+  classNames.forEach(name => {
+    const row = legend.append("div")
+      .attr("class", "d-flex align-items-center mb-2");
+
+    row.append("div")
+      .attr("class", "legend-color")
+      .style("width", "14px")
+      .style("height", "14px")
+      .style("border", "1px solid #333")
+      .style("border-radius", "3px")
+      .style("margin-right", "6px")
+      .style("background", color(name));
+
+    row.append("span")
+      .style("color", "#222")
+      .text(name);
+  });
+
+  return color;
+}
+
+// 補助関数
+function getClassName(node) {
+  return node.label.split(".")[0];
 }

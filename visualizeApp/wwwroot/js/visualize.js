@@ -27,9 +27,6 @@
     console.warn("No nodes found in the data");
     return;
   }
-  // let connects = links.filter(function (link) {
-  //   return link.Node1 == nodes[0].Id;
-  // });
   let connects = [];
   if(nodes[0].Type === "if"){
     nodes[0].drawn = true;
@@ -57,8 +54,9 @@
     saveCordinates(nodes[0], x, y, minWidth, 120);
     deepestY.push(y + 120);
   } else {
-    drawNode(x, y, minWidth, height, nodes[0].Label, nodes[0].LineNumber);
-    saveCordinates(nodes[0], x, y, minWidth, height);
+    let tmpWidth = decideWidth(nodes[0].Label, minWidth);
+    drawNode(x, y, tmpWidth, height, nodes[0].Label, nodes[0].LineNumber);
+    saveCordinates(nodes[0], x, y, tmpWidth, height);
     deepestY.push(y + height);
   }
   if(nodes[0].Type == "methodCall"){
@@ -139,7 +137,7 @@
             }
           }
           let ifHeight = deepest - target.y + lenLink / 2;
-          drawIfNode(target.x, target.y, minWidth, ifHeight, target.Label, target.lineNumber);
+          drawIfNode(target.x, target.y, minWidth, ifHeight, target.Label, target.LineNumber);
           saveCordinates(target, target.x, target.y, minWidth * 2, ifHeight);
         }
       } else {
@@ -312,9 +310,12 @@ function drawNode(x, y, width, height, label, lineNumber = 0) {
     .on("mouseleave", function () {
       d3.select(this).select("rect")
         .attr("fill", "white");
-      if (window.highlightLine) {
-        // ハイライト解除（空の range を適用）
-        window.editorInstance.deltaDecorations([], []);
+
+      if (window.editorInstance && window.highlightDecoration) {
+        window.highlightDecoration = window.editorInstance.deltaDecorations(
+          window.highlightDecoration,
+          []
+        );
       }
     });
 
@@ -349,9 +350,13 @@ function drawIfNode(x, y, width, height, label, lineNumber = 0) {
     .on("mouseleave", function () {
       d3.select(this).select("polygon")
         .attr("fill", "white");
-      if (window.highlightLine) {
-        window.editorInstance.deltaDecorations([], []); // ハイライト解除
-      }
+
+    if (window.editorInstance && window.highlightDecoration) {
+      window.highlightDecoration = window.editorInstance.deltaDecorations(
+        window.highlightDecoration,
+        []
+      );
+    }
     });
 
   const points = [

@@ -28,6 +28,7 @@ function updateView() {
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById("uploadSection").style.display = "block";
     document.getElementById("visualSection").style.display = "none";
+    document.getElementById('legend').classList.add('d-none');
     updateView();
     callGraphData = "";
 });
@@ -47,18 +48,18 @@ document.addEventListener('DOMContentLoaded', function () {
             window.editorInstance = editor;
 
             // 行ハイライト
-            let highlightDecoration = [];
+            window.highlightDecoration = [];
 
             function highlightLine(lineNumber) {
                 if (!lineNumber || lineNumber < 1) return;
                 const model = editor.getModel();
                 if (!model || model.getLineCount() < 3) {
-                    highlightDecoration = editor.deltaDecorations(highlightDecoration, []);
+                    window.highlightDecoration = editor.deltaDecorations(window.highlightDecoration, []);
                     return;
                 }
 
                 const maxColumn = model.getLineMaxColumn(lineNumber);
-                highlightDecoration = editor.deltaDecorations(highlightDecoration, [
+                window.highlightDecoration = editor.deltaDecorations(window.highlightDecoration, [
                     {
                         range: new monaco.Range(lineNumber, 1, lineNumber, maxColumn),
                         options: {
@@ -81,6 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         document.getElementById("uploadButton").disabled = false;
                         document.getElementById("uploadSection").style.display = "block";
                         document.getElementById("visualSection").style.display = "none";
+                        document.getElementById('legend').classList.add('d-none');
                         return;
                     }
                     const blob = new Blob([editedCode], { type: "text/plain" });
@@ -152,6 +154,7 @@ function updateCallGraph() {
             if (data) {
                 document.getElementById("uploadSection").style.display = "none";
                 document.getElementById("visualSection").style.display = "block";
+                document.getElementById('legend').classList.remove('d-none');
                 const newData = JSON.stringify(data);
                 if (newData != callGraphData) {
                     d3.select("#graph-layer").selectAll("*").remove();
@@ -169,18 +172,21 @@ function updateCallGraph() {
                     else if(data.nodes.length === 0){
                         document.getElementById("uploadSection").style.display = "block";
                         document.getElementById("visualSection").style.display = "none";
+                        document.getElementById('legend').classList.add('d-none');
                     }
                 }
             }
             else {
                  document.getElementById("uploadSection").style.display = "block";
                 document.getElementById("visualSection").style.display = "none";
+                document.getElementById('legend').classList.add('d-none');
             }
         })
         .catch(() => {
             document.getElementById("uploadButton").disabled = false;
             document.getElementById("uploadSection").style.display = "block";
             document.getElementById("visualSection").style.display = "none";
+            document.getElementById('legend').classList.add('d-none');
         });
 }
 

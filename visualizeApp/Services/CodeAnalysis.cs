@@ -154,7 +154,9 @@ namespace visualizeApp.Services
                     {
                         if (elseClause.Statement is IfStatementSyntax elseIfStmt)
                         {
-                            jsonHandler.addNode(id, "else if", elseIfStmt.Condition.ToString(), depth, currentClassName, currentMethodName, lineNumber);
+                            var elseIfLine =
+                                elseIfStmt.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
+                            jsonHandler.addNode(id, "else if", elseIfStmt.Condition.ToString(), depth, currentClassName, currentMethodName, elseIfLine);
                             CreateLink("else if");
                             SaveCondition("else if");
                             id++;
