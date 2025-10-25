@@ -2,11 +2,11 @@
   "nodes": [
     {
       "id": 0,
-      "label": "FizzBuzz.Main"
+      "label": "Program.Main"
     },
     {
       "id": 1,
-      "label": "FizzBuzz.judgeFizzBuzz"
+      "label": "Counter.CountTo"
     }
   ],
   "links": [
