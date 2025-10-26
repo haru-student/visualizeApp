@@ -1,4 +1,6 @@
-﻿function drawCallGraph(data) {
+﻿import { getPadData } from "./visualize.js";
+
+export function drawCallGraph(data) {
     console.log("Edited code called", data);
     window.graphData = data;
     const svg = d3.select("#graph-layer")
@@ -193,7 +195,7 @@ function resetGraphLayout() {
   window.currentSimulation.alpha(1).restart();
 }
 
-function drawMethodCallLink(label, x, y) {
+export function drawMethodCallLink(label, x, y) {
   const svg = d3.select("#graph-layer");
   if (!window.methodCallLines) window.methodCallLines = new Map();
   const targetNodeSel = svg.selectAll("g.nodeStyle").filter(d => d.label === label);

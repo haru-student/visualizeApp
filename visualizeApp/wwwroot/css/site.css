@@ -49,3 +49,34 @@ body {
 .highlight-line {
     background-color: rgba(255, 255, 0, 0.3); /* 半透明の黄色 */
 }
+
+#memo-panel {
+  position: fixed;
+  top: 0;
+  right: -320px; /* 初期は画面外 */
+  width: 300px;
+  height: 100vh;
+  background: #fafafa;
+  border-left: 1px solid #ccc;
+  padding: 10px;
+  box-shadow: -2px 0 6px rgba(0,0,0,0.1);
+  transition: right 0.3s ease;
+  z-index: 10;
+}
+
+#memo-panel.open {
+  right: 0; /* 表示時にスライドイン */
+}
+
+.memo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#memo-text {
+  width: 100%;
+  height: calc(100vh - 100px);
+  resize: none;
+}
+
