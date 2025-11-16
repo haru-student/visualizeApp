@@ -109,6 +109,11 @@ function initUpload() {
     });
 }
 
+function initView() {
+    document.getElementById('toggleEditor').addEventListener('change', updateView);
+    document.getElementById('toggleVisual').addEventListener('change', updateView);
+}
+
 //画面表示の変更。エディターと可視化の標示
 function updateView() {
     const editorCol = document.querySelector('.col-4');
@@ -143,6 +148,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('legend').classList.add('d-none');
     initMonaco();
     initUpload();
-    updateView();
+    initView();
     initMemoModule();
 });

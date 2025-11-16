@@ -1,5 +1,5 @@
 ﻿import { drawMethodCallLink } from "./callGraph.js";
-import { openMemo } from "./memo.js";
+import { hideMemo, openMemoEditor, showMemo } from "./memo.js";
 
 export function drawPAD(data, posX = 0, posY = 0) {
   if(window.methodCallLines && window.methodCallLines.size > 0){
@@ -45,7 +45,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
     deepestY.push(y + height);
     saveCordinates(nodes[0], x, y, minWidth * 2, height);
   } else if(nodes[0].Type === "loop"){
-    drawNode(x, y, minWidth, 120, nodes[0].Label, nodes[0].LineNumber, nodes[0].Id);
+    drawNode(x, y, minWidth, 120, nodes[0]);
     svg
       .append("line")
       .attr("x1", x + 6)
@@ -58,7 +58,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
     deepestY.push(y + 120);
   } else {
     let tmpWidth = decideWidth(nodes[0].Label, minWidth);
-    drawNode(x, y, tmpWidth, height, nodes[0].Label, nodes[0].LineNumber, nodes[0].Id);
+    drawNode(x, y, tmpWidth, height, nodes[0]);
     saveCordinates(nodes[0], x, y, tmpWidth, height);
     deepestY.push(y + height);
   }
@@ -91,7 +91,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
           }
         }
         tmpY += lenLink;
-        drawNode(tmpX, tmpY, minWidth, 120, target.Label, target.LineNumber, target.Id);
+        drawNode(tmpX, tmpY, minWidth, 120, target);
         saveCordinates(target, tmpX, tmpY, minWidth, 120);
         svg
           .append("line")
@@ -109,7 +109,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
           }
         }
         tmpY += lenLink;
-        drawNode(0, tmpY, minWidth, height, target.Label, target.LineNumber, target.Id);
+        drawNode(0, tmpY, minWidth, height, target);
         saveCordinates(target, 0, tmpY, minWidth, height);
       } else if (target.Type == "if") {
         let tmpX;
@@ -140,7 +140,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
             }
           }
           let ifHeight = deepest - target.y + lenLink / 2;
-          drawIfNode(target.x, target.y, minWidth, ifHeight, target.Label, target.LineNumber, target.Id);
+          drawIfNode(target.x, target.y, minWidth, ifHeight, target);
           saveCordinates(target, target.x, target.y, minWidth * 2, ifHeight);
         }
       } else {
@@ -159,7 +159,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
         }
         tmpY += lenLink / 2;
         console.log(tmpY);
-        drawNode(tmpX, tmpY, tmpWidth, height, target.Label, target.LineNumber, target.Id);
+        drawNode(tmpX, tmpY, tmpWidth, height, target);
         saveCordinates(target, tmpX, tmpY, tmpWidth, height);
       }
     } else if (connect.Type == "loop") {
@@ -179,13 +179,13 @@ export function drawPAD(data, posX = 0, posY = 0) {
             }
           }
           let ifHeight = deepest - target.y + lenLink / 2;
-          drawIfNode(target.x, target.y, minWidth, ifHeight, target.Label, target.LineNumber, target.Id);
+          drawIfNode(target.x, target.y, minWidth, ifHeight, target);
           saveCordinates(target, target.x, target.y, minWidth * 2, ifHeight);
         }
       } else if (target.Type == "loop") {
         let tmpX = x + target.Depth * (minWidth + lenLink);
         let tmpY = source.y + source.height / 2;
-        drawNode(tmpX, tmpY, minWidth, 120, target.Label, target.LineNumber, target.Id);
+        drawNode(tmpX, tmpY, minWidth, 120, target);
         saveCordinates(target, tmpX, tmpY, minWidth, 120);
         svg
           .append("line")
@@ -199,14 +199,14 @@ export function drawPAD(data, posX = 0, posY = 0) {
         let tmpX = source.x + source.width + lenLink / 2;
         let tmpY = source.y + source.height / 2;
         let tmpWidth = decideWidth(target.Label, minWidth);
-        drawNode(tmpX, tmpY, tmpWidth, height, target.Label, target.LineNumber, target.Id);
+        drawNode(tmpX, tmpY, tmpWidth, height, target);
         saveCordinates(target, tmpX, tmpY, tmpWidth, height);
       }
     } else if (connect.Type == "true") {
       if (target.Type == "for") {
         let tmpX = source.x + source.width + lenLink / 2;
         let tmpY = source.y;
-        drawNode(tmpX, tmpY, minWidth, 120, target.Label, target.LineNumber, target.Id);
+        drawNode(tmpX, tmpY, minWidth, 120, target);
         saveCordinates(target, tmpX, tmpY, minWidth, 120);
         svg
           .append("line")
@@ -232,14 +232,14 @@ export function drawPAD(data, posX = 0, posY = 0) {
             }
           }
           let ifHeight = deepest - target.y + lenLink / 2;
-          drawIfNode(target.x, target.y, minWidth, ifHeight, target.Label, target.LineNumber, target.Id);
+          drawIfNode(target.x, target.y, minWidth, ifHeight, target);
           saveCordinates(target, target.x, target.y, minWidth * 2, ifHeight);
         }
       } else {
         let tmpWidth = decideWidth(target.Label, minWidth);
         let tmpX = source.x + source.width + lenLink / 2;
         let tmpY = source.y;
-        drawNode(tmpX, tmpY, tmpWidth, height, target.Label, target.LineNumber, target.Id);
+        drawNode(tmpX, tmpY, tmpWidth, height, target);
         saveCordinates(target, tmpX, tmpY, tmpWidth, height);
       }
     } else if (connect.Type == "false") {
@@ -259,13 +259,13 @@ export function drawPAD(data, posX = 0, posY = 0) {
             }
           }
           let ifHeight = deepest - target.y + lenLink / 2;
-          drawIfNode(target.x, target.y, minWidth, ifHeight, target.Label, target.LineNumber, target.Id);
+          drawIfNode(target.x, target.y, minWidth, ifHeight, target);
           saveCordinates(target, target.x, target.y, minWidth * 2, ifHeight);
         }
       } else if (target.Type == "loop") {
         let tmpX = source.x + source.width + lenLink / 2;
         let tmpY = source.y + source.height;
-        drawNode(tmpX, tmpY, minWidth, 120, target.Label, target.LineNumber, target.Id);
+        drawNode(tmpX, tmpY, minWidth, 120, target);
         saveCordinates(target, tmpX, tmpY, minWidth, 120);
         svg
           .append("line")
@@ -279,7 +279,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
         let tmpWidth = decideWidth(target.Label, minWidth);
         let tmpX = source.x + source.width + lenLink / 2;
         let tmpY = source.y + source.height;
-        drawNode(tmpX, tmpY, tmpWidth, height, target.Label, target.LineNumber, target.Id);
+        drawNode(tmpX, tmpY, tmpWidth, height, target);
         saveCordinates(target, tmpX, tmpY, tmpWidth, height);
       }
     }
@@ -300,15 +300,16 @@ export function drawPAD(data, posX = 0, posY = 0) {
     connects.unshift(...filteredLinks);
   }
 
-function drawNode(x, y, width, height, label, lineNumber = 0, id) {
+function drawNode(x, y, width, height, node) {
   const g = svg.append("g")
     .attr("class", "pad-node")
     .on("mouseenter", function () {
       d3.select(this).select("rect")
         .attr("fill", "#ffff99"); // ホバー時の背景色
-      if (window.highlightLine && lineNumber) {
-        window.highlightLine(lineNumber);
+      if (window.highlightLine && node.LineNumber) {
+        window.highlightLine(node.LineNumber);
       }
+      showMemo(node, this);
     })
     .on("mouseleave", function () {
       d3.select(this).select("rect")
@@ -320,8 +321,9 @@ function drawNode(x, y, width, height, label, lineNumber = 0, id) {
           []
         );
       }
+      hideMemo();
     })
-    .on("click", () => openMemo(id));
+    .on("click", () => openMemoEditor(node));
 
   g.append("rect")
     .attr("x", x)
@@ -337,18 +339,19 @@ function drawNode(x, y, width, height, label, lineNumber = 0, id) {
     .attr("y", y + height / 2)
     .attr("text-anchor", "middle")
     .attr("dy", ".35em")
-    .text(label);
+    .text(node.Label);
 }
 
-function drawIfNode(x, y, width, height, label, lineNumber = 0, id) {
+function drawIfNode(x, y, width, height, node) {
   const g = svg.append("g")
     .attr("class", "pad-node if-node")
     .on("mouseenter", function () {
       d3.select(this).select("polygon")
         .attr("fill", "#ffff99"); // ホバー時の背景色
-      if (window.highlightLine && lineNumber) {
-        window.highlightLine(lineNumber);
+      if (window.highlightLine && node.LineNumber) {
+        window.highlightLine(node.LineNumber);
       }
+      showMemo(node, this);
     })
     .on("mouseleave", function () {
       d3.select(this).select("polygon")
@@ -359,8 +362,9 @@ function drawIfNode(x, y, width, height, label, lineNumber = 0, id) {
         []
       );
     }
+    hideMemo();
     })
-    .on("click", () => openMemo(id));
+    .on("click", () => openMemoEditor(node));
 
   const points = [
     [x, y],
@@ -383,7 +387,7 @@ function drawIfNode(x, y, width, height, label, lineNumber = 0, id) {
     .attr("y", y + height / 2)
     .attr("text-anchor", "middle")
     .attr("dy", ".35em")
-    .text(label);
+    .text(node.Label);
 }
 
   function drawLink(source, target, link) {

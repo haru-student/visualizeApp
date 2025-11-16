@@ -68,15 +68,35 @@ body {
   right: 0; /* 表示時にスライドイン */
 }
 
-.memo-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 #memo-text {
   width: 100%;
-  height: calc(100vh - 100px);
+  height: calc(100vh - 150px);
   resize: none;
+} 
+
+.d3-tip {
+  color: #ffffff;
 }
+
+.memo-tooltip {
+  display: block;          /* 幅を自然に持たせる */
+  box-sizing: border-box;
+  max-width: 300px;
+  padding: 5px;
+  background-color: rgb(37, 137, 208);
+  z-index: 10;
+  border-radius: 5%;
+}
+
+.memo-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: rgb(37, 137, 208) transparent transparent transparent;
+}
+
 
