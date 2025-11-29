@@ -33,7 +33,6 @@ export function drawPAD(data, posX = 0, posY = 0) {
   let connects = [];
   if(nodes[0].Type === "if"){
     nodes[0].drawn = true;
-    saveCordinates(nodes[0], x, y, minWidth * 2, height);
     let tmpLink = {
       Node1: -1,
       Node2: 0,
@@ -43,7 +42,8 @@ export function drawPAD(data, posX = 0, posY = 0) {
     };
     connects.unshift(tmpLink);
     deepestY.push(y + height);
-    saveCordinates(nodes[0], x, y, minWidth * 2, height);
+    let width = decideWidth(nodes[0], minWidth);
+    saveCordinates(nodes[0], x, y, width, height);
   } else if(nodes[0].Type === "loop"){
     drawNode(x, y, minWidth, 120, nodes[0]);
     svg
@@ -70,7 +70,6 @@ export function drawPAD(data, posX = 0, posY = 0) {
     filteredLinks = filteredLinks.filter((link) => link.Type === "true");
   } 
   connects.unshift(...filteredLinks);
-  console.log(connects);
   while (connects.length > 0) {
     let connect = connects[0];
     let source;
@@ -125,11 +124,11 @@ export function drawPAD(data, posX = 0, posY = 0) {
           }
         }
         tmpY += lenLink / 2;
-        console.log(tmpY);
 
         if (!target.drawn) {
           nodes[target.Id].drawn = true;
-          saveCordinates(target, tmpX, tmpY, minWidth * 2, height);
+          let width = decideWidth(target.Label, minWidth) * 0.7;
+          saveCordinates(target, tmpX, tmpY, width, height);
           connects.unshift(connect);
         } else {
           nodes[target.Id].drawn = false;
@@ -140,8 +139,9 @@ export function drawPAD(data, posX = 0, posY = 0) {
             }
           }
           let ifHeight = deepest - target.y + lenLink / 2;
-          drawIfNode(target.x, target.y, minWidth, ifHeight, target);
-          saveCordinates(target, target.x, target.y, minWidth * 2, ifHeight);
+          let width = decideWidth(target.Label, minWidth) * 0.7;
+          drawIfNode(target.x, target.y, width, ifHeight, target);
+          saveCordinates(target, target.x, target.y, width, ifHeight);
         }
       } else {
         let tmpWidth = decideWidth(target.Label, minWidth);
@@ -158,7 +158,6 @@ export function drawPAD(data, posX = 0, posY = 0) {
           }
         }
         tmpY += lenLink / 2;
-        console.log(tmpY);
         drawNode(tmpX, tmpY, tmpWidth, height, target);
         saveCordinates(target, tmpX, tmpY, tmpWidth, height);
       }
@@ -168,7 +167,8 @@ export function drawPAD(data, posX = 0, posY = 0) {
         let tmpY = source.y + source.height / 2;
         if (!target.drawn) {
           nodes[target.Id].drawn = true;
-          saveCordinates(target, tmpX, tmpY, minWidth * 2, height);
+          let width = decideWidth(target.Label, minWidth) * 0.7;
+          saveCordinates(target, tmpX, tmpY, width, height);
           connects.unshift(connect);
         } else {
           nodes[target.Id].drawn = false;
@@ -179,8 +179,9 @@ export function drawPAD(data, posX = 0, posY = 0) {
             }
           }
           let ifHeight = deepest - target.y + lenLink / 2;
-          drawIfNode(target.x, target.y, minWidth, ifHeight, target);
-          saveCordinates(target, target.x, target.y, minWidth * 2, ifHeight);
+          let width = decideWidth(target.Label, minWidth) * 0.7;
+          drawIfNode(target.x, target.y, width, ifHeight, target);
+          saveCordinates(target, target.x, target.y, width, ifHeight);
         }
       } else if (target.Type == "loop") {
         let tmpX = x + target.Depth * (minWidth + lenLink);
@@ -203,8 +204,8 @@ export function drawPAD(data, posX = 0, posY = 0) {
         saveCordinates(target, tmpX, tmpY, tmpWidth, height);
       }
     } else if (connect.Type == "true") {
-      if (target.Type == "for") {
-        let tmpX = source.x + source.width + lenLink / 2;
+      if (target.Type == "loop") {
+        let tmpX = source.x + source.width * 2 + lenLink / 2;
         let tmpY = source.y;
         drawNode(tmpX, tmpY, minWidth, 120, target);
         saveCordinates(target, tmpX, tmpY, minWidth, 120);
@@ -217,11 +218,12 @@ export function drawPAD(data, posX = 0, posY = 0) {
           .attr("stroke", "black")
           .attr("stroke-width", 1);
       } else if (target.Type == "if") {
-        let tmpX = source.x + source.width + lenLink / 2;
+        let tmpX = source.x + source.width * 2 + lenLink / 2;
         let tmpY = source.y;
         if (!target.drawn) {
           nodes[target.Id].drawn = true;
-          saveCordinates(target, tmpX, tmpY, minWidth * 2, height);
+          let width = decideWidth(target.Label, minWidth) * 0.7;
+          saveCordinates(target, tmpX, tmpY, width, height);
           connects.unshift(connect);
         } else {
           nodes[target.Id].drawn = false;
@@ -232,23 +234,25 @@ export function drawPAD(data, posX = 0, posY = 0) {
             }
           }
           let ifHeight = deepest - target.y + lenLink / 2;
-          drawIfNode(target.x, target.y, minWidth, ifHeight, target);
-          saveCordinates(target, target.x, target.y, minWidth * 2, ifHeight);
+          let width = decideWidth(target.Label, minWidth) * 0.7;
+          drawIfNode(target.x, target.y, width, ifHeight, target);
+          saveCordinates(target, target.x, target.y, width, ifHeight);
         }
       } else {
         let tmpWidth = decideWidth(target.Label, minWidth);
-        let tmpX = source.x + source.width + lenLink / 2;
+        let tmpX = source.x + source.width * 2 + lenLink / 2;
         let tmpY = source.y;
         drawNode(tmpX, tmpY, tmpWidth, height, target);
         saveCordinates(target, tmpX, tmpY, tmpWidth, height);
       }
     } else if (connect.Type == "false") {
       if (target.Type == "else if" || target.Type == "if") {
-        let tmpX = source.x + source.width + lenLink / 2;
+        let tmpX = source.x + source.width * 2 + lenLink / 2;
         let tmpY = source.y + source.height;
         if (!target.drawn) {
           nodes[target.Id].drawn = true;
-          saveCordinates(target, tmpX, tmpY, minWidth * 2, height);
+          let width = decideWidth(target.Label, minWidth) * 0.7;
+          saveCordinates(target, tmpX, tmpY, width, height);
           connects.unshift(connect);
         } else {
           nodes[target.Id].drawn = false;
@@ -259,11 +263,12 @@ export function drawPAD(data, posX = 0, posY = 0) {
             }
           }
           let ifHeight = deepest - target.y + lenLink / 2;
-          drawIfNode(target.x, target.y, minWidth, ifHeight, target);
-          saveCordinates(target, target.x, target.y, minWidth * 2, ifHeight);
+          let width = decideWidth(target.Label, minWidth) * 0.7;
+          drawIfNode(target.x, target.y, width, ifHeight, target);
+          saveCordinates(target, target.x, target.y, width, ifHeight);
         }
       } else if (target.Type == "loop") {
-        let tmpX = source.x + source.width + lenLink / 2;
+        let tmpX = source.x + source.width * 2 + lenLink / 2;
         let tmpY = source.y + source.height;
         drawNode(tmpX, tmpY, minWidth, 120, target);
         saveCordinates(target, tmpX, tmpY, minWidth, 120);
@@ -277,7 +282,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
           .attr("stroke-width", 1);
       } else {
         let tmpWidth = decideWidth(target.Label, minWidth);
-        let tmpX = source.x + source.width + lenLink / 2;
+        let tmpX = source.x + source.width * 2 + lenLink / 2;
         let tmpY = source.y + source.height;
         drawNode(tmpX, tmpY, tmpWidth, height, target);
         saveCordinates(target, tmpX, tmpY, tmpWidth, height);
@@ -333,13 +338,29 @@ function drawNode(x, y, width, height, node) {
     .attr("fill", "white")
     .attr("stroke", "black")
     .attr("stroke-width", 1);
+  
+  if (node.Type == "loop" && node.Label != ";;") {
+    const lines = node.Label.split(/(?<=;)/);
+    const text = g.append("text")
+      .attr("x", x + width / 2)
+      .attr("y", y + height / 2)
+      .attr("text-anchor", "middle")
+      .attr("dy", ".35em");
 
-  g.append("text")
-    .attr("x", x + width / 2)
-    .attr("y", y + height / 2)
-    .attr("text-anchor", "middle")
-    .attr("dy", ".35em")
-    .text(node.Label);
+    lines.forEach((line, i) => {
+      text.append("tspan")
+        .attr("x", x + width / 2)
+        .attr("dy", i === 0 ? 0 : 16) 
+        .text(line);
+});
+  } else {
+    g.append("text")
+      .attr("x", x + width / 2)
+      .attr("y", y + height / 2)
+      .attr("text-anchor", "middle")
+      .attr("dy", ".35em")
+      .text(node.Label);
+  }
 }
 
 function drawIfNode(x, y, width, height, node) {
@@ -383,9 +404,9 @@ function drawIfNode(x, y, width, height, node) {
     .attr("stroke-width", 1);
 
   g.append("text")
-    .attr("x", x + width)
+    .attr("x", x + 20)
     .attr("y", y + height / 2)
-    .attr("text-anchor", "middle")
+    .attr("text-anchor", "start") 
     .attr("dy", ".35em")
     .text(node.Label);
 }
