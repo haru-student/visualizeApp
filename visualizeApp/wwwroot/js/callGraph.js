@@ -1,4 +1,5 @@
-﻿import { getPadData } from "./visualize.js";
+﻿import { closeMemoEditor, hideMemo, openMemoEditor, showMemo } from "./memo.js";
+import { getPadData } from "./visualize.js";
 
 export function drawCallGraph(data) {
     console.log("Edited code called", data);
@@ -6,6 +7,8 @@ export function drawCallGraph(data) {
     const svg = d3.select("#graph-layer")
     const width = +svg.attr("width") || 800;
     const height = +svg.attr("height") || 600;
+
+    let clickTimeout = null;
 
     svg.selectAll("*").remove();
 
@@ -75,13 +78,44 @@ export function drawCallGraph(data) {
         .enter().append("g")
         .classed("nodeStyle", true)
         .on("click", (event, d) => {
-            if(window.displayedMethods == null)
-              openPadForNode(d);
-            else if(window.displayedMethods != d.label)
-              switchPad(d);
-            else
-              resetGraphLayout();
-        });
+          // ダブルクリック判定
+          if (clickTimeout !== null) {
+              clearTimeout(clickTimeout);
+              clickTimeout = null;
+
+              closeMemoEditor();
+              handleOpenPAD(d);
+              return;
+          }
+
+          clickTimeout = setTimeout(() => {
+            let tmp = {
+              Id: -1,
+              Class: d.label.split('.')[0],
+              Method: d.label.split('.')[1]
+            };
+
+            openMemoEditor(tmp);
+            clickTimeout = null;
+          }, 300);
+        })
+      .on("mouseenter", function (event, d) {
+        d3.select(this).select("rect")
+          .transition().duration(120)
+          .attr("stroke-width", 2); 
+        let tmp = {
+          Id: -1,
+          Class: d.label.split('.')[0],
+          Method: d.label.split('.')[1]
+        };
+        showMemo(tmp, this);
+      })
+      .on("mouseleave", function () {
+        d3.select(this).select("rect")
+          .transition().duration(120)
+          .attr("stroke-width", 1.5); 
+        hideMemo();
+      });
 
     node.append("rect")
         .attr("x", -40)
@@ -123,6 +157,15 @@ function offsetLine(source, target, offset = 40) {
     };
 }
 
+function handleOpenPAD(d) {
+  if(window.displayedMethods == null)
+    openPadForNode(d);
+  else if(window.displayedMethods != d.label)
+    switchPad(d);
+  else
+    resetGraphLayout();
+    return;
+}
 function openPadForNode(d) {
   console.log("openPadForNode", d);
   d.fx = 100;

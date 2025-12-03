@@ -99,4 +99,12 @@ body {
   border-color: rgb(37, 137, 208) transparent transparent transparent;
 }
 
+svg text {
+  user-select: none;          /* 標準 */
+  -webkit-user-select: none;  /* Chrome / Safari */
+  -moz-user-select: none;     /* Firefox */
+  -ms-user-select: none;      /* Edge旧 */
+}
+
+
 

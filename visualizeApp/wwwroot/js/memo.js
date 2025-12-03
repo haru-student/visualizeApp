@@ -33,7 +33,7 @@ export function openMemoEditor(node) {
   panel.classList.add("open");
 }
 
-function closeMemoEditor() {
+export function closeMemoEditor() {
   panel.classList.remove("open");
 }
 
