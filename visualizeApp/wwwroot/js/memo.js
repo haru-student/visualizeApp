@@ -1,5 +1,6 @@
 // memo.js
 import d3Tip from "https://cdn.skypack.dev/d3-tip@0.9.1";
+import { sendLogData } from "./log.js";
 
 let openId;
 let openClass;
@@ -50,6 +51,10 @@ function saveMemo() {
     });
   }
   panel.classList.remove("open");
+  // メモ編集ログ
+  sendLogData(1, "editMemo", openClass, openMethod, openId, {
+    Memo: textarea.value,
+  });
 }
 
 function getMemoData() {
@@ -88,6 +93,8 @@ export function showMemo(detail, element) {
 
   try {
     tip.show({ Memo: memo }, element);
+    // メモ表示ログ
+    sendLogData(1, 'showMemo', openClass, openMethod, openId, {Memo: memo});
   } catch (e) {
     console.warn("Tooltip failed:", e, element);
   }
@@ -95,5 +102,8 @@ export function showMemo(detail, element) {
 
 // ホバーアウト時にメモを非表示
 export function hideMemo() {
-  if (tip) tip.hide();
+  if (!tip) return;
+  tip.hide();
+  // メモ非表示ログ
+  sendLogData(1, 'hideMemo', openClass, openMethod, openId, {Memo: getMemoData()});
 }

@@ -1,4 +1,5 @@
-﻿import { initMemoModule } from "./memo.js";
+﻿import { sendLogData } from "./log.js";
+import { initMemoModule } from "./memo.js";
 import { updateCallGraph } from "./visualize.js";
 
 // monaco editorの設定
@@ -71,6 +72,8 @@ function initMonaco() {
                         return;
                     }
                     updateCallGraph();
+                    // テスト開始のログ送信
+                    sendLogData(1, 'start', null, null, null, null);
                 }, 1000);
             });
         });

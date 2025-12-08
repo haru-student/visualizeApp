@@ -1,4 +1,5 @@
-﻿import { closeMemoEditor, hideMemo, openMemoEditor, showMemo } from "./memo.js";
+﻿import { sendLogData } from "./log.js";
+import { closeMemoEditor, hideMemo, openMemoEditor, showMemo } from "./memo.js";
 import { getPadData } from "./visualize.js";
 
 export function drawCallGraph(data) {
@@ -167,7 +168,6 @@ function handleOpenPAD(d) {
     return;
 }
 function openPadForNode(d) {
-  console.log("openPadForNode", d);
   d.fx = 100;
   d.fy = 200;
 
@@ -191,6 +191,8 @@ function openPadForNode(d) {
     window.currentSimulation.alphaTarget(0); // 減衰を強制的に終わらせる
     window.currentSimulation.stop();
   }, 500); // ← 秒数はお好みで（200〜800msぐらい試すと良い）
+  // PADを標示ログ
+  sendLogData(1, 'openPAD', d.Class, d.Method, null, null);
 }
 
 function switchPad(newNode) {
@@ -236,6 +238,9 @@ function resetGraphLayout() {
 
   // force を再加熱して再レイアウト
   window.currentSimulation.alpha(1).restart();
+
+  // PADを閉じるログ
+  sendLogData(1, 'closePAD', null, null, null, null);
 }
 
 export function drawMethodCallLink(label, x, y) {
