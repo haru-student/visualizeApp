@@ -9,6 +9,8 @@ let memoData = [];
 let panel, textarea, closeBtn, saveBtn;
 let tip = null;
 
+let memoTimer = null;
+
 export function initMemoModule() {
   panel = document.getElementById("memo-panel");
   textarea = document.getElementById("memo-text");
@@ -91,17 +93,29 @@ export function showMemo(detail, element) {
 
   if (tip === null) initMemoTooltip();
 
-  try {
-    tip.show({ Memo: memo }, element);
-    // メモ表示ログ
-    sendLogData(1, 'showMemo', openClass, openMethod, openId, {Memo: memo});
-  } catch (e) {
-    console.warn("Tooltip failed:", e, element);
+  if (memoTimer !== null) {
+    clearTimeout(memoTimer);
+    memoTimer = null;
   }
+
+  memoTimer = setTimeout(() => {
+    try {
+      tip.show({ Memo: memo }, element);
+      // メモ表示ログ
+      sendLogData(1, 'showMemo', openClass, openMethod, openId, {Memo: memo});
+    } catch (e) {
+      console.warn("Tooltip failed:", e, element);
+    }
+    memoTimer = null; 
+  }, 300);
 }
 
 // ホバーアウト時にメモを非表示
 export function hideMemo() {
+if (memoTimer !== null) {
+  clearTimeout(memoTimer); 
+  memoTimer = null;
+}
   if (!tip) return;
   tip.hide();
   // メモ非表示ログ

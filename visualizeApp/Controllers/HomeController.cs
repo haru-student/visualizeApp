@@ -64,7 +64,7 @@ namespace visualizeApp.Controllers
         {
             if (data == null)
             {
-                Console.WriteLine("data is null");
+                return BadRequest("Invalid data: Request body is empty or malformed.");
             }
             Console.WriteLine(data.EventType);
 
