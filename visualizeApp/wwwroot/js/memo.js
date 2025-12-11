@@ -2,12 +2,16 @@
 import d3Tip from "https://cdn.skypack.dev/d3-tip@0.9.1";
 import { sendLogData } from "./log.js";
 
-let openId;
-let openClass;
-let openMethod;
+let editingId = null;
+let editingClass = null;
+let editingMethod = null;
+let hoverId = null;
+let hoverClass = null;
+let hoverMethod = null;
 let memoData = [];
 let panel, textarea, closeBtn, saveBtn;
 let tip = null;
+let IsTipShown = false;
 
 let memoTimer = null;
 
@@ -22,11 +26,13 @@ export function initMemoModule() {
 }
 
 export function openMemoEditor(node) {
-  openId = node.Id;
-  openClass = node.Class;
-  openMethod = node.Method;
+  if (panel.classList.contains("open") && editingId === node.Id && editingClass === node.Class && editingMethod === node.Method)
+    return;
+  editingId = node.Id;
+  editingClass = node.Class;
+  editingMethod = node.Method;
 
-  const existing = getMemoData();
+  const existing = getMemoData(editingClass, editingMethod, editingId);
   if (existing !== null) {
     textarea.value = existing.Memo;
   } else {
@@ -34,34 +40,38 @@ export function openMemoEditor(node) {
   }
   // 表示
   panel.classList.add("open");
+  sendLogData(1, 'openMemoEditor', editingClass, editingMethod, editingId, null);
 }
 
 export function closeMemoEditor() {
+  if (!panel.classList.contains("open"))
+    return;
   panel.classList.remove("open");
+  sendLogData(1, 'closeMemoEditor', editingClass, editingMethod, editingId, null);
 }
 
 function saveMemo() {
-  const existing = getMemoData();
+  const existing = getMemoData(editingClass, editingMethod, editingId);
   if (existing !== null) {
     existing.Memo = textarea.value;
   } else {
     memoData.push({
-      Class: openClass,
-      Method: openMethod,
-      Id: openId,
+      Class: editingClass,
+      Method: editingMethod,
+      Id: editingId,
       Memo: textarea.value,
     });
   }
   panel.classList.remove("open");
   // メモ編集ログ
-  sendLogData(1, "editMemo", openClass, openMethod, openId, {
-    Memo: textarea.value,
+  sendLogData(1, "updateMemo", editingClass, editingMethod, editingId, {
+    'Memo': textarea.value,
   });
 }
 
-function getMemoData() {
+function getMemoData(className, methodName, id) {
   const existing = memoData.find(
-    (m) => m.Class === openClass && m.Method === openMethod && m.Id === openId
+    (m) => m.Class === className && m.Method === methodName && m.Id === id
   );
   if (existing) {
     return existing;
@@ -83,10 +93,10 @@ function initMemoTooltip() {
 
 //ノードホバー時にメモの表示
 export function showMemo(detail, element) {
-  openClass = detail.Class;
-  openMethod = detail.Method;
-  openId = detail.Id;
-  const memoData = getMemoData();
+  hoverClass = detail.Class;
+  hoverMethod = detail.Method;
+  hoverId = detail.Id;
+  const memoData = getMemoData(hoverClass, hoverMethod, hoverId);
   if (memoData === null || memoData.Memo === "") return;
 
   const memo = memoData !== null ? memoData.Memo : "メモがありません";
@@ -101,8 +111,9 @@ export function showMemo(detail, element) {
   memoTimer = setTimeout(() => {
     try {
       tip.show({ Memo: memo }, element);
+      IsTipShown = true;
       // メモ表示ログ
-      sendLogData(1, 'showMemo', openClass, openMethod, openId, {Memo: memo});
+      sendLogData(1, 'showMemo', hoverClass, hoverMethod, hoverId, {'Memo': memo});
     } catch (e) {
       console.warn("Tooltip failed:", e, element);
     }
@@ -115,9 +126,13 @@ export function hideMemo() {
 if (memoTimer !== null) {
   clearTimeout(memoTimer); 
   memoTimer = null;
+  return;
 }
-  if (!tip) return;
+  if (!tip || !IsTipShown)
+    return;
+  IsTipShown = false;
   tip.hide();
   // メモ非表示ログ
-  sendLogData(1, 'hideMemo', openClass, openMethod, openId, {Memo: getMemoData()});
+  const memo = getMemoData(hoverClass, hoverMethod, hoverId) !== null ? getMemoData(hoverClass, hoverMethod, hoverId).Memo : null;
+  sendLogData(1, 'hideMemo', hoverClass, hoverMethod, hoverId, {'Memo': memo});
 }

@@ -192,7 +192,7 @@ function openPadForNode(d) {
     window.currentSimulation.stop();
   }, 500); // ← 秒数はお好みで（200〜800msぐらい試すと良い）
   // PADを標示ログ
-  sendLogData(1, 'openPAD', d.Class, d.Method, null, null);
+  sendLogData(1, 'openPAD', d.label.split('.')[0], d.label.split('.')[1], null, null);
 }
 
 function switchPad(newNode) {

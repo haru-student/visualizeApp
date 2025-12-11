@@ -4,8 +4,9 @@ class LogData {
         this.EventType = eventType;
         this.Location = location;
         this.Detail = detail;
-        this.Timestamp = new Date().toLocaleString("ja-JP", { 
-            timeZone: "Asia/Tokyo" 
+        this.Timestamp = new Date().toLocaleString("sv-SE", {
+            timeZone: "Asia/Tokyo",
+            hour12: false
         });
     }
 }
@@ -17,7 +18,7 @@ export async function sendLogData(userId, eventType, className = null, methodNam
     console.log("Send Log:", data);
 
     try {
-        await fetch('/Home/SaveLog', {
+        await fetch('/Home/SaveLogData', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
