@@ -1,7 +1,12 @@
+using visualizeApp.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddSingleton<LoggingService>();
+builder.Services.AddSingleton<CodeAnalysis>();
 
 var app = builder.Build();
 
