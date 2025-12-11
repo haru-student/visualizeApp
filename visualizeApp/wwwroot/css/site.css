@@ -49,3 +49,62 @@ body {
 .highlight-line {
     background-color: rgba(255, 255, 0, 0.3); /* 半透明の黄色 */
 }
+
+#memo-panel {
+  position: fixed;
+  top: 0;
+  right: -320px; /* 初期は画面外 */
+  width: 300px;
+  height: 100vh;
+  background: #fafafa;
+  border-left: 1px solid #ccc;
+  padding: 10px;
+  box-shadow: -2px 0 6px rgba(0,0,0,0.1);
+  transition: right 0.3s ease;
+  z-index: 10;
+}
+
+#memo-panel.open {
+  right: 0; /* 表示時にスライドイン */
+}
+
+#memo-text {
+  width: 100%;
+  height: calc(100vh - 150px);
+  resize: none;
+} 
+
+.d3-tip {
+  color: #ffffff;
+}
+
+.memo-tooltip {
+  display: block;          /* 幅を自然に持たせる */
+  box-sizing: border-box;
+  max-width: 300px;
+  padding: 5px;
+  background-color: rgb(37, 137, 208);
+  z-index: 10;
+  border-radius: 5%;
+}
+
+.memo-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: rgb(37, 137, 208) transparent transparent transparent;
+}
+
+svg text {
+  user-select: none;          /* 標準 */
+  -webkit-user-select: none;  /* Chrome / Safari */
+  -moz-user-select: none;     /* Firefox */
+  -ms-user-select: none;      /* Edge旧 */
+}
+
+
+

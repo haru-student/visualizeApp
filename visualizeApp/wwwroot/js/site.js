@@ -1,40 +1,9 @@
-﻿//画面表示の変更。エディターと可視化の標示
-function updateView() {
-    const editorCol = document.querySelector('.col-4');
-    const visualCol = document.querySelector('.col-8');
+﻿import { sendLogData } from "./log.js";
+import { initMemoModule } from "./memo.js";
+import { updateCallGraph } from "./visualize.js";
 
-    const showEditor = document.getElementById('toggleEditor').checked;
-    const showVisual = document.getElementById('toggleVisual').checked;
-
-    editorCol.classList.toggle('d-none', !showEditor);
-    visualCol.classList.toggle('d-none', !showVisual);
-
-    if (showEditor && showVisual) {
-        editorCol.classList.remove('w-100');
-        visualCol.classList.remove('w-100');
-    } else if (showEditor) {
-        editorCol.classList.add('w-100');
-        visualCol.classList.remove('w-100');
-    } else if (showVisual) {
-        visualCol.classList.add('w-100');
-        editorCol.classList.remove('w-100');
-    }
-
-    if (window.editorInstance) {
-        window.editorInstance.layout();
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById("uploadSection").style.display = "block";
-    document.getElementById("visualSection").style.display = "none";
-    document.getElementById('legend').classList.add('d-none');
-    updateView();
-    callGraphData = "";
-});
-
-//monaco editorの設定。変更が加えられたらpostリクエスト送信.
-document.addEventListener('DOMContentLoaded', function () {
+// monaco editorの設定
+function initMonaco() {
     if (typeof require !== 'undefined') {
         require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs' } });
 
@@ -103,16 +72,18 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
                     updateCallGraph();
+                    // テスト開始のログ送信
+                    sendLogData(1, 'start', null, null, null, null);
                 }, 1000);
             });
         });
     } else {
         console.error('RequireJSが読み込まれていません');
     }
-});
+}
 
-// ファイルアップロード処理。editorへの標示のみ行い、postリクエストはeditorのほうから
-document.addEventListener('DOMContentLoaded', () => {
+// アップロード画面の設定
+function initUpload() {
     document.getElementById('uploadForm').addEventListener('submit', async function (e) {
         e.preventDefault();
 
@@ -139,108 +110,47 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         reader.readAsText(file);
     });
-});
-
-//標示しているコールグラフ。比較を行い、変更があれば再描画
-callGraphData = "";
-// padDiagram.json の存在チェックと可視化
-function updateCallGraph() {
-    fetch("/data/callGraph.json", { cache: "no-store" })
-        .then(res => {
-            if (!res.ok) throw new Error();
-            return res.json();
-        })
-        .then(data => {
-            if (data) {
-                document.getElementById("uploadSection").style.display = "none";
-                document.getElementById("visualSection").style.display = "block";
-                document.getElementById('legend').classList.remove('d-none');
-                const newData = JSON.stringify(data);
-                if (newData != callGraphData) {
-                    d3.select("#graph-layer").selectAll("*").remove();
-                    d3.select("#pad-layer").selectAll("*").remove();
-                    drawCallGraph(data);
-                    callGraphData = newData;
-                }
-                else {
-                    if(data.nodes.length > 1 && window.displayedMethods != null){
-                        getPadData(100, 200);
-                    }
-                    else if(data.nodes.length === 1 && window.displayedMethods != null){
-                        getPadData(50, 30);
-                    }
-                    else if(data.nodes.length === 0){
-                        document.getElementById("uploadSection").style.display = "block";
-                        document.getElementById("visualSection").style.display = "none";
-                        document.getElementById('legend').classList.add('d-none');
-                    }
-                }
-            }
-            else {
-                 document.getElementById("uploadSection").style.display = "block";
-                document.getElementById("visualSection").style.display = "none";
-                document.getElementById('legend').classList.add('d-none');
-            }
-        })
-        .catch(() => {
-            document.getElementById("uploadButton").disabled = false;
-            document.getElementById("uploadSection").style.display = "block";
-            document.getElementById("visualSection").style.display = "none";
-            document.getElementById('legend').classList.add('d-none');
-        });
 }
 
-//PADで標示しているメソッド
-window.displayedMethods = null;
-window.displayedPAD = "";
-//jsonから必要なPADデータの取得
-function getPadData(posX, posY) {
-    const svg = d3.select("#pad-layer");
+function initView() {
+    document.getElementById('toggleEditor').addEventListener('change', updateView);
+    document.getElementById('toggleVisual').addEventListener('change', updateView);
+}
 
-    if (window.displayedMethods == null) {
-        d3.select("#pad-layer").selectAll("*").remove();
-        window.displayedPAD = "";
-        return;
+//画面表示の変更。エディターと可視化の標示
+function updateView() {
+    const editorCol = document.querySelector('.col-4');
+    const visualCol = document.querySelector('.col-8');
+
+    const showEditor = document.getElementById('toggleEditor').checked;
+    const showVisual = document.getElementById('toggleVisual').checked;
+
+    editorCol.classList.toggle('d-none', !showEditor);
+    visualCol.classList.toggle('d-none', !showVisual);
+
+    if (showEditor && showVisual) {
+        editorCol.classList.remove('w-100');
+        visualCol.classList.remove('w-100');
+    } else if (showEditor) {
+        editorCol.classList.add('w-100');
+        visualCol.classList.remove('w-100');
+    } else if (showVisual) {
+        visualCol.classList.add('w-100');
+        editorCol.classList.remove('w-100');
     }
 
-    fetch("/data/padDiagram.json", { cache: "no-store" })
-        .then(res => {
-            if (!res.ok) throw new Error();
-            return res.json();
-        })
-        .then(data => {
-            const [className, methodName] = window.displayedMethods.split(/\./);
-            const filtered = extractMethodDiagram(data, className, methodName);
-
-            if (filtered.Nodes.length === 0) {
-                throw new Error("対象のノードが存在しません");
-            }
-            const newPAD = JSON.stringify(filtered);
-            if (newPAD === window.displayedPAD) {
-                console.log("同じPADなので再描画しません");
-                return;
-            }
-            d3.select("#pad-layer").selectAll("*").remove();
-            visualize(filtered, posX, posY);
-            window.displayedPAD = newPAD;
-        })
-        .catch(err => {
-            console.error(err);
-        });
+    if (window.editorInstance) {
+        window.editorInstance.layout();
+    }
 }
 
-
-function extractMethodDiagram(fullDiagram, className, methodName) {
-    const nodes = fullDiagram.Nodes.filter(
-        node => node.Class === className && node.Method === methodName
-    );
-
-    const links = fullDiagram.Links.filter(
-        link => link.Class === className && link.Method === methodName
-    );
-
-    return {
-        Nodes: nodes,
-        Links: links
-    };
-}
+//初期化
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById("uploadSection").style.display = "block";
+    document.getElementById("visualSection").style.display = "none";
+    document.getElementById('legend').classList.add('d-none');
+    initMonaco();
+    initUpload();
+    initView();
+    initMemoModule();
+});

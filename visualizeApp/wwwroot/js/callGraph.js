@@ -1,9 +1,15 @@
-﻿function drawCallGraph(data) {
+﻿import { sendLogData } from "./log.js";
+import { closeMemoEditor, hideMemo, openMemoEditor, showMemo } from "./memo.js";
+import { getPadData } from "./visualize.js";
+
+export function drawCallGraph(data) {
     console.log("Edited code called", data);
     window.graphData = data;
     const svg = d3.select("#graph-layer")
     const width = +svg.attr("width") || 800;
     const height = +svg.attr("height") || 600;
+
+    let clickTimeout = null;
 
     svg.selectAll("*").remove();
 
@@ -73,13 +79,44 @@
         .enter().append("g")
         .classed("nodeStyle", true)
         .on("click", (event, d) => {
-            if(window.displayedMethods == null)
-              openPadForNode(d);
-            else if(window.displayedMethods != d.label)
-              switchPad(d);
-            else
-              resetGraphLayout();
-        });
+          // ダブルクリック判定
+          if (clickTimeout !== null) {
+              clearTimeout(clickTimeout);
+              clickTimeout = null;
+
+              closeMemoEditor();
+              handleOpenPAD(d);
+              return;
+          }
+
+          clickTimeout = setTimeout(() => {
+            let tmp = {
+              Id: -1,
+              Class: d.label.split('.')[0],
+              Method: d.label.split('.')[1]
+            };
+
+            openMemoEditor(tmp);
+            clickTimeout = null;
+          }, 300);
+        })
+      .on("mouseenter", function (event, d) {
+        d3.select(this).select("rect")
+          .transition().duration(120)
+          .attr("stroke-width", 2); 
+        let tmp = {
+          Id: -1,
+          Class: d.label.split('.')[0],
+          Method: d.label.split('.')[1]
+        };
+        showMemo(tmp, this);
+      })
+      .on("mouseleave", function () {
+        d3.select(this).select("rect")
+          .transition().duration(120)
+          .attr("stroke-width", 1.5); 
+        hideMemo();
+      });
 
     node.append("rect")
         .attr("x", -40)
@@ -121,8 +158,16 @@ function offsetLine(source, target, offset = 40) {
     };
 }
 
+function handleOpenPAD(d) {
+  if(window.displayedMethods == null)
+    openPadForNode(d);
+  else if(window.displayedMethods != d.label)
+    switchPad(d);
+  else
+    resetGraphLayout();
+    return;
+}
 function openPadForNode(d) {
-  console.log("openPadForNode", d);
   d.fx = 100;
   d.fy = 200;
 
@@ -146,6 +191,8 @@ function openPadForNode(d) {
     window.currentSimulation.alphaTarget(0); // 減衰を強制的に終わらせる
     window.currentSimulation.stop();
   }, 500); // ← 秒数はお好みで（200〜800msぐらい試すと良い）
+  // PADを標示ログ
+  sendLogData(1, 'openPAD', d.label.split('.')[0], d.label.split('.')[1], null, null);
 }
 
 function switchPad(newNode) {
@@ -191,9 +238,12 @@ function resetGraphLayout() {
 
   // force を再加熱して再レイアウト
   window.currentSimulation.alpha(1).restart();
+
+  // PADを閉じるログ
+  sendLogData(1, 'closePAD', null, null, null, null);
 }
 
-function drawMethodCallLink(label, x, y) {
+export function drawMethodCallLink(label, x, y) {
   const svg = d3.select("#graph-layer");
   if (!window.methodCallLines) window.methodCallLines = new Map();
   const targetNodeSel = svg.selectAll("g.nodeStyle").filter(d => d.label === label);

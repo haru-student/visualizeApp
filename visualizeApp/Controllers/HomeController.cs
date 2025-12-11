@@ -9,11 +9,13 @@ namespace visualizeApp.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly LoggingService _logger;
+        private readonly CodeAnalysis _roslyn;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(LoggingService logger, CodeAnalysis roslyn)
         {
             _logger = logger;
+            _roslyn = roslyn;
         }
         
         public IActionResult Index()
@@ -21,20 +23,18 @@ namespace visualizeApp.Controllers
             var padFile = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "data", "padDiagram.json");
             var callGraphFile = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "data", "callGraph.json");
 
-            // 親フォルダが無ければ作成
             var dir = Path.GetDirectoryName(padFile);
-            if (!Directory.Exists(dir))
+            if (!Directory.Exists(dir) && dir != null)
             {
                 Directory.CreateDirectory(dir);
             }
 
             dir = Path.GetDirectoryName(callGraphFile);
-            if (!Directory.Exists(dir))
+            if (!Directory.Exists(dir) && dir != null)
             {
                 Directory.CreateDirectory(dir);
             }
 
-            // ファイルの中身を "null" に初期化（なければ作成）
             System.IO.File.WriteAllText(padFile, "null");
             System.IO.File.WriteAllText(callGraphFile, "null");
 
@@ -46,7 +46,7 @@ namespace visualizeApp.Controllers
         {
             if (csFile == null || csFile.Length == 0)
             {
-                return Content("無効なファイルです。");
+                return Content("");
             }
 
             string fileContent;
@@ -55,10 +55,21 @@ namespace visualizeApp.Controllers
                 fileContent = await reader.ReadToEndAsync();
             }
 
-            CodeAnalysis roslyn = new CodeAnalysis();
-            roslyn.Entry(fileContent);
+            _roslyn.Entry(fileContent);
 
-            return Content("ファイルを正常に処理しました。");
+            return Content("");
+        }
+
+        [HttpPost]
+        public IActionResult SaveLogData([FromBody] LogData data)
+        {
+            if (data == null)
+            {
+                return BadRequest("Invalid data: Request body is empty or malformed.");
+            }
+            _logger.appendLogData(data);
+
+            return Ok();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
