@@ -2,6 +2,12 @@ using visualizeApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// プロダクション環境時に実行
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5000); // HTTPで全PCからアクセス可能
+});
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
@@ -10,6 +16,7 @@ builder.Services.AddSingleton<CodeAnalysis>();
 
 var app = builder.Build();
 
+app.UseStaticFiles();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -30,8 +37,8 @@ if (app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
-// app.UseStaticFiles();
+// プロダクション環境じにはコメントアウト
+// app.UseHttpsRedirection();
 
 app.UseRouting();
 
