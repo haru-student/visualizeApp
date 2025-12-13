@@ -2,6 +2,11 @@ using visualizeApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5000); // HTTPで全PCからアクセス可能
+});
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
@@ -10,6 +15,7 @@ builder.Services.AddSingleton<CodeAnalysis>();
 
 var app = builder.Build();
 
+app.UseStaticFiles();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -29,9 +35,12 @@ if (app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+// else
+// {
+//     app.UseStaticFiles();
+// }
 
-app.UseHttpsRedirection();
-// app.UseStaticFiles();
+// app.UseHttpsRedirection();
 
 app.UseRouting();
 
