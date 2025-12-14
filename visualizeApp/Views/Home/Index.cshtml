@@ -2,25 +2,27 @@
     ViewData["Title"] = "コードの可視化";
 }
 
-<div class="form-check form-check-inline">
-    <input class="form-check-input" type="checkbox" id="toggleEditor" checked onchange="updateView()">
-    <label class="form-check-label" for="toggleEditor">エディターを表示</label>
-</div>
-<div class="form-check form-check-inline">
-    <input class="form-check-input" type="checkbox" id="toggleVisual" checked onchange="updateView()">
-    <label class="form-check-label" for="toggleVisual">可視化を表示</label>
+<div class="d-none d-md-block">
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="toggleEditor" checked>
+        <label class="form-check-label" for="toggleEditor">エディターを表示</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="toggleVisual" checked>
+        <label class="form-check-label" for="toggleVisual">可視化を表示</label>
+    </div>
 </div>
 
 <div class="row">
-    <div class="col-4">
+    <div class="col-4" id="editor-col">
         <div id="code-editor"></div>
     </div>
-    <div class="col-8">
+    <div class="col-8" id="visual-col">
         <!-- アップロード用 -->
         <div id="uploadSection" style="display: none;">
             <div class="d-flex justify-content-center align-items-center vh-100">
                 <div class="text-center">
-                    <h2 class="mb-5">コードを書くかファイルをアップロードしてください。</h2>
+                    <h3 class="mb-5" id="uploadMessage" class="text-break-keep">コードを書くかファイルをアップロードしてください</h2>
                     <form id="uploadForm">
                         <input type="file" id="csFile" name="csFile" accept=".cs" required />
                         <button type="submit" class="btn btn-primary" id="uploadButton">アップロード</button>
