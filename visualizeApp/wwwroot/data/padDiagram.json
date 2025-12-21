@@ -1,1 +1,184 @@
-null
+{
+  "Nodes": [
+    {
+      "Id": 0,
+      "Type": "expression",
+      "Label": "Console.WriteLine(\"=== Start ===\")",
+      "Class": "Program",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 7
+    },
+    {
+      "Id": 1,
+      "Type": "methodCall",
+      "Label": "Counter.CountTo",
+      "Class": "Program",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 9
+    },
+    {
+      "Id": 2,
+      "Type": "expression",
+      "Label": "Console.WriteLine(\"=== End ===\")",
+      "Class": "Program",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 11
+    },
+    {
+      "Id": 3,
+      "Type": "expression",
+      "Label": "Console.ReadLine()",
+      "Class": "Program",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 12
+    },
+    {
+      "Id": 0,
+      "Type": "loop",
+      "Label": "i = 1;i <= limit;i++",
+      "Class": "Counter",
+      "Method": "CountTo",
+      "Depth": 0,
+      "LineNumber": 20
+    },
+    {
+      "Id": 1,
+      "Type": "expression",
+      "Label": "Console.WriteLine($\"Number: {i}\")",
+      "Class": "Counter",
+      "Method": "CountTo",
+      "Depth": 1,
+      "LineNumber": 22
+    },
+    {
+      "Id": 2,
+      "Type": "localDeclaration",
+      "Label": "int j = 0;",
+      "Class": "Counter",
+      "Method": "CountTo",
+      "Depth": 0,
+      "LineNumber": 25
+    },
+    {
+      "Id": 3,
+      "Type": "loop",
+      "Label": "j < limit",
+      "Class": "Counter",
+      "Method": "CountTo",
+      "Depth": 0,
+      "LineNumber": 26
+    },
+    {
+      "Id": 4,
+      "Type": "if",
+      "Label": "j % 2 == 0",
+      "Class": "Counter",
+      "Method": "CountTo",
+      "Depth": 1,
+      "LineNumber": 28
+    },
+    {
+      "Id": 5,
+      "Type": "expression",
+      "Label": "Console.WriteLine($\"Even: {j}\")",
+      "Class": "Counter",
+      "Method": "CountTo",
+      "Depth": 2,
+      "LineNumber": 30
+    },
+    {
+      "Id": 6,
+      "Type": "expression",
+      "Label": "Console.WriteLine($\"Odd: {j}\")",
+      "Class": "Counter",
+      "Method": "CountTo",
+      "Depth": 2,
+      "LineNumber": 34
+    },
+    {
+      "Id": 7,
+      "Type": "expression",
+      "Label": "j++",
+      "Class": "Counter",
+      "Method": "CountTo",
+      "Depth": 1,
+      "LineNumber": 36
+    }
+  ],
+  "Links": [
+    {
+      "Node1": 0,
+      "Node2": 1,
+      "Type": "normal",
+      "Class": "Program",
+      "Method": "Main"
+    },
+    {
+      "Node1": 1,
+      "Node2": 2,
+      "Type": "normal",
+      "Class": "Program",
+      "Method": "Main"
+    },
+    {
+      "Node1": 2,
+      "Node2": 3,
+      "Type": "normal",
+      "Class": "Program",
+      "Method": "Main"
+    },
+    {
+      "Node1": 0,
+      "Node2": 1,
+      "Type": "loop",
+      "Class": "Counter",
+      "Method": "CountTo"
+    },
+    {
+      "Node1": 0,
+      "Node2": 2,
+      "Type": "normal",
+      "Class": "Counter",
+      "Method": "CountTo"
+    },
+    {
+      "Node1": 2,
+      "Node2": 3,
+      "Type": "normal",
+      "Class": "Counter",
+      "Method": "CountTo"
+    },
+    {
+      "Node1": 3,
+      "Node2": 4,
+      "Type": "loop",
+      "Class": "Counter",
+      "Method": "CountTo"
+    },
+    {
+      "Node1": 4,
+      "Node2": 5,
+      "Type": "true",
+      "Class": "Counter",
+      "Method": "CountTo"
+    },
+    {
+      "Node1": 4,
+      "Node2": 6,
+      "Type": "false",
+      "Class": "Counter",
+      "Method": "CountTo"
+    },
+    {
+      "Node1": 4,
+      "Node2": 7,
+      "Type": "normal",
+      "Class": "Counter",
+      "Method": "CountTo"
+    }
+  ]
+}

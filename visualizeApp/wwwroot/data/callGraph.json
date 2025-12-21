@@ -1,1 +1,18 @@
-null
+{
+  "nodes": [
+    {
+      "id": 0,
+      "label": "Program.Main"
+    },
+    {
+      "id": 1,
+      "label": "Counter.CountTo"
+    }
+  ],
+  "links": [
+    {
+      "source": 0,
+      "target": 1
+    }
+  ]
+}

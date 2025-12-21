@@ -2,7 +2,7 @@ using visualizeApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 本番環境時に実行
+// // 本番環境時に実行
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenAnyIP(5000); // HTTPで全PCからアクセス可能
