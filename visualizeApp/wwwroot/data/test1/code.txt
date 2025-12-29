@@ -1,0 +1,38 @@
+using System;
+
+class Program
+{
+    public static void Main()
+    {
+        Console.WriteLine("=== Start ===");
+
+        Counter.Count(3); // メソッド呼び出し（別クラス）
+
+        Console.WriteLine("=== End ===");
+    }
+}
+
+class Counter
+{
+    public static void Count(int limit)
+    {
+        for (int i = 1; i <= limit; i++)
+        {
+            Console.WriteLine($"Number: {i}");
+        }
+
+        int j = 0;
+        while (j < limit)
+        {
+            if (j % 2 == 0)
+            {
+                Console.WriteLine($"Even: {j}");
+            }
+            else
+            {
+                Console.WriteLine($"Odd: {j}");
+            }
+            j++;
+        }
+    }
+}

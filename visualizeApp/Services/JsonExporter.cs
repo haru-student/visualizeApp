@@ -12,7 +12,6 @@ namespace visualizeApp.Services
 
         public void addNode(int id, string type, string label, int depth, string className, string methodName, int lineNumber)
         {
-            Console.WriteLine($"{id}, {label}");
             var node = new Node
             {
                 Id = id,

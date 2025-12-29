@@ -1,0 +1,152 @@
+{
+  "Nodes": [
+    {
+      "Id": 0,
+      "Type": "loop",
+      "Label": "i = 1;i <= 100;i++",
+      "Class": "FizzBuzz",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 7
+    },
+    {
+      "Id": 1,
+      "Type": "methodCall",
+      "Label": "FizzBuzz.judgeFizzBuzz",
+      "Class": "FizzBuzz",
+      "Method": "Main",
+      "Depth": 1,
+      "LineNumber": 9
+    },
+    {
+      "Id": 2,
+      "Type": "expression",
+      "Label": "Console.ReadLine(\"complete\")",
+      "Class": "FizzBuzz",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 11
+    },
+    {
+      "Id": 0,
+      "Type": "if",
+      "Label": "i % 3 == 0 && i % 5 == 0",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz",
+      "Depth": 0,
+      "LineNumber": 15
+    },
+    {
+      "Id": 1,
+      "Type": "expression",
+      "Label": "Console.WriteLine(\"FizzBuzz\")",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz",
+      "Depth": 1,
+      "LineNumber": 17
+    },
+    {
+      "Id": 2,
+      "Type": "else if",
+      "Label": "i % 3 == 0",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz",
+      "Depth": 1,
+      "LineNumber": 19
+    },
+    {
+      "Id": 3,
+      "Type": "expression",
+      "Label": "Console.WriteLine(\"Fizz\")",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz",
+      "Depth": 2,
+      "LineNumber": 21
+    },
+    {
+      "Id": 4,
+      "Type": "else if",
+      "Label": "i % 5 == 0",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz",
+      "Depth": 2,
+      "LineNumber": 23
+    },
+    {
+      "Id": 5,
+      "Type": "expression",
+      "Label": "Console.WriteLine(\"Buzz\")",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz",
+      "Depth": 3,
+      "LineNumber": 25
+    },
+    {
+      "Id": 6,
+      "Type": "expression",
+      "Label": "Console.WriteLine(i)",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz",
+      "Depth": 3,
+      "LineNumber": 29
+    }
+  ],
+  "Links": [
+    {
+      "Node1": 0,
+      "Node2": 1,
+      "Type": "loop",
+      "Class": "FizzBuzz",
+      "Method": "Main"
+    },
+    {
+      "Node1": 0,
+      "Node2": 2,
+      "Type": "normal",
+      "Class": "FizzBuzz",
+      "Method": "Main"
+    },
+    {
+      "Node1": 0,
+      "Node2": 1,
+      "Type": "true",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz"
+    },
+    {
+      "Node1": 0,
+      "Node2": 2,
+      "Type": "false",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz"
+    },
+    {
+      "Node1": 2,
+      "Node2": 3,
+      "Type": "true",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz"
+    },
+    {
+      "Node1": 2,
+      "Node2": 4,
+      "Type": "false",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz"
+    },
+    {
+      "Node1": 4,
+      "Node2": 5,
+      "Type": "true",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz"
+    },
+    {
+      "Node1": 4,
+      "Node2": 6,
+      "Type": "false",
+      "Class": "FizzBuzz",
+      "Method": "judgeFizzBuzz"
+    }
+  ]
+}

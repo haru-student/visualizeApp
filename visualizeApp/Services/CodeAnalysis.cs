@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq; // Enumerableのために必要
+using System.Linq; 
 using System.Reflection;
 // using Microsoft.AspNetCore.Identity.Data; // このUsingは不要そうなのでコメントアウト
 using Microsoft.CodeAnalysis;
@@ -77,7 +77,6 @@ namespace visualizeApp.Services
                 isElse = false;
                 currentMethodName = methodDecl.Identifier.Text;
                 methodList.Add((currentClassName, currentMethodName));
-                Console.WriteLine(currentMethodName);
                 AnalyzeStatements(methodDecl.Body.Statements, semanticModel);
             }
         }

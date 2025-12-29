@@ -3,16 +3,22 @@ using visualizeApp.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // // 本番環境時に実行
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(5000); // HTTPで全PCからアクセス可能
-});
+// builder.WebHost.ConfigureKestrel(options =>
+// {
+//     options.ListenAnyIP(5000); // HTTPで全PCからアクセス可能
+// });
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<LoggingService>();
 builder.Services.AddSingleton<CodeAnalysis>();
+
+builder.Services.AddRouting(options =>
+{
+    options.LowercaseUrls = true;
+    options.LowercaseQueryStrings = true;
+});
 
 var app = builder.Build();
 
@@ -37,7 +43,7 @@ if (app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
 app.UseRouting();
 

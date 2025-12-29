@@ -1,0 +1,28 @@
+@using System.Runtime.InteropServices
+@* /test *@
+@{
+    ViewData["Title"] = "Test";
+    var myCookie = Context.Request.Cookies["userId"];
+}
+
+@if (!string.IsNullOrEmpty(myCookie))
+{
+    @* @if (int.Parse(myCookie) % 2 == 0) 
+    {
+        <a href></a>
+    }
+    else 
+    {
+
+    } *@
+}
+else
+{
+    <form id="idForm" class="text-center">
+        <label for="idInput">被験者番号</label>
+    <input type="text" id="idInput">
+    <button type="submit" class="btn">保存</button>
+    </form>
+}
+
+<script type="module" src="~/js/test.js" asp-append-version="true"></script>

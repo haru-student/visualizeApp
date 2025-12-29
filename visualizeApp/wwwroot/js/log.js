@@ -11,9 +11,9 @@ class LogData {
     }
 }
 
-export async function sendLogData(userId, eventType, className = null, methodName = null, id = null,  detail = null) {
+export async function sendLogData(eventType, className = null, methodName = null, id = null,  detail = null) {
 
-    const data = createLogEntity(userId, eventType, className, methodName, id,  detail);
+    const data = createLogEntity(eventType, className, methodName, id,  detail);
 
     console.log("Send Log:", data);
 
@@ -28,9 +28,22 @@ export async function sendLogData(userId, eventType, className = null, methodNam
     }
 }
 
-function createLogEntity(userId, eventType, className = null, methodName = null, id = null,  detail = null) {
+function createLogEntity(eventType, className = null, methodName = null, id = null,  detail = null) {
+    let userId = getCookieValue('userId');
     const location = (className || methodName)
         ? { Class: className, Method: methodName, NodeId: id }
         : null;
     return new LogData(userId, eventType, location, detail);
+}
+
+function getCookieValue(key) {
+  const cookies = document.cookie.split(';');
+  const foundCookie = cookies.find(
+    (cookie) => cookie.split('=')[0].trim() === key.trim()
+  );
+  if (foundCookie) {
+    const cookieValue = decodeURIComponent(foundCookie.split('=')[1])
+    return cookieValue
+  }
+  return "-1";
 }

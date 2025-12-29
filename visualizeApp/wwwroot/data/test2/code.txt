@@ -1,0 +1,32 @@
+using System;
+
+class FizzBuzz
+{
+    public static void Main()
+    {
+        for (int i = 1; i <= 100; i++)
+        {
+            judgeFizzBuzz(i);
+        }
+        Console.ReadLine("complete"); 
+    }
+
+    public static void judgeFizzBuzz(int i){
+            if (i % 3 == 0 && i % 5 == 0)
+            {
+                Console.WriteLine("FizzBuzz");
+            }
+            else if (i % 3 == 0)
+            {
+                Console.WriteLine("Fizz");
+            }
+            else if (i % 5 == 0)
+            {
+                Console.WriteLine("Buzz");
+            }
+            else
+            {
+                Console.WriteLine(i);
+            }
+    }
+}

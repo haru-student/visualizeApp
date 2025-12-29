@@ -1,8 +1,18 @@
 ﻿import { sendLogData } from "./log.js";
 import { closeMemoEditor, hideMemo, openMemoEditor, showMemo } from "./memo.js";
-import { getPadData } from "./visualize.js";
+let getPadData = null;
+
+async function loadPadModule() {
+  if (location.pathname.startsWith("/test")) {
+    ({ getPadData } = await import("./diagramOnly.js"));
+  } else {
+    ({ getPadData } = await import("./visualize.js"));
+  }
+}
 
 export function drawCallGraph(data) {
+    if (getPadData === null)
+      loadPadModule();
     console.log("Edited code called", data);
     window.graphData = data;
     const svg = d3.select("#graph-layer")
@@ -192,7 +202,7 @@ function openPadForNode(d) {
     window.currentSimulation.stop();
   }, 500); // ← 秒数はお好みで（200〜800msぐらい試すと良い）
   // PADを標示ログ
-  sendLogData(1, 'openPAD', d.label.split('.')[0], d.label.split('.')[1], null, null);
+  sendLogData('openPAD', d.label.split('.')[0], d.label.split('.')[1], null, null);
 }
 
 function switchPad(newNode) {
@@ -240,7 +250,7 @@ function resetGraphLayout() {
   window.currentSimulation.alpha(1).restart();
 
   // PADを閉じるログ
-  sendLogData(1, 'closePAD', null, null, null, null);
+  sendLogData('closePAD', null, null, null, null);
 }
 
 export function drawMethodCallLink(label, x, y) {

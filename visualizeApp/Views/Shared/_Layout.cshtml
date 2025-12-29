@@ -1,6 +1,5 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,23 +8,25 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/visualizeApp.styles.css" asp-append-version="true" />
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    @* <script src="https://unpkg.com/d3-tip@0.9.1/index.js"></script> *@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs/editor/editor.main.css" />
-    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs/loader.js"></script>
-
-
-</head>
+    </head>
 
 <body>
     <div class="container min-vh-100">
+        @await Html.PartialAsync("TestHeader")
+        @await Html.PartialAsync("QuestionModal")
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="~/js/site.js" asp-append-version="true"></script>
+    
+    <script src="~/js/questionModal.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs/loader.js"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
-
 </html>

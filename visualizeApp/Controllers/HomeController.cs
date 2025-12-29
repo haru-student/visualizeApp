@@ -40,6 +40,10 @@ namespace visualizeApp.Controllers
 
             return View();
         }
+        public IActionResult Test()
+        {
+            return View();
+        }
 
         [HttpPost]
         public async Task<IActionResult> ProcessFile(IFormFile csFile)

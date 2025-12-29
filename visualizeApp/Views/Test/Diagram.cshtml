@@ -1,0 +1,37 @@
+@* /test/diagram *@
+@{
+    ViewData["Title"] = "Test: Diagram";
+}
+<div class="text-center vh-100 vw-100">
+  <div
+    id="legend"
+    class="legend-box position-fixed bottom-0 end-0 m-3 p-3 bg-white border rounded shadow d-none"
+  ></div>
+
+  <div
+    class="position-relative w-100 h-100"
+    id="visualSection"
+    data-test-id="@ViewData["testId"]"
+  >
+    <svg
+      id="graph-layer"
+      class="position-absolute top-0 start-0 w-100 h-100"
+    ></svg>
+
+    <svg
+      id="pad-layer"
+      class="position-absolute top-0 start-0 w-100 h-100"
+    ></svg>
+  </div>
+</div>
+
+<div id="memo-panel">
+  <div class="memo-header text-end">
+    <button type="button" class="btn-close mb-1" aria-label="Close" id="close-memo"></button>
+
+  </div>
+  <textarea id="memo-text" class="form-control mb-2" rows="10"></textarea>
+  <button id="save-memo" class="btn btn-primary">保存</button>
+</div>
+
+<script type="module" src="~/js/diagramOnly.js" asp-append-version="true"></script>

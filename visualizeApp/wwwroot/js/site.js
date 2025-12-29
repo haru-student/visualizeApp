@@ -72,8 +72,8 @@ function initMonaco() {
                         return;
                     }
                     updateCallGraph();
-                    // テスト開始のログ送信
-                    sendLogData(1, 'start', null, null, null, null);
+                    // 開始のログ送信
+                    sendLogData('start', null, null, null, null);
                 }, 1000);
             });
         });
