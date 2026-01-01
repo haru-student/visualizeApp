@@ -6,29 +6,35 @@
 
 @if (isTestPath && !string.IsNullOrEmpty(userId))
 {
-    <header>
+    <header id="testHeader"
+    @if (ViewData["testId"] != null)
+    {
+        <text>data-test-id="@ViewData["testId"]"</text>
+    }
+    >
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-1">
             <div class="container-fluid">
                 <p class="mb-0">被験者番号：@userId</p>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">解答する</button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" id="answerBtn">解答する</button>
             </div>
         </nav>
     </header>
-@* <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Modal title</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>Modal body text goes here.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
-      </div>
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">解答フォーム</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="questionContainer">
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">戻る</button>
+            <button type="button" class="btn btn-primary" id="submitBtn">解答する</button>
+        </div>
+        </div>
     </div>
-  </div>
-</div> *@
+    </div>
+
+    <script type="module" src="~/js/questionModal.js"></script>
 }

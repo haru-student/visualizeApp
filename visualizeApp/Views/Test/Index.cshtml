@@ -3,25 +3,46 @@
 @{
     ViewData["Title"] = "Test";
     var myCookie = Context.Request.Cookies["userId"];
+    bool isTest1Done = Context.Request.Cookies.ContainsKey("test1");
+    bool isTest2Done = Context.Request.Cookies.ContainsKey("test2");
 }
 
 @if (!string.IsNullOrEmpty(myCookie))
 {
-    @* @if (int.Parse(myCookie) % 2 == 0) 
-    {
-        <a href></a>
+    <div class="alert alert-primary" role="alert">
+    @if (isTest1Done && isTest2Done) {
+        @:課題1、課題2の両方を完了しました。事後アンケートにご協力お願いします。
+    } else if (isTest1Done) {
+        @:課題1を完了しました。3の動作確認を行った後、課題2に取り組んでください。
+    } else if (isTest2Done) {
+        @:課題2を完了しました。1の動作確認を行った後、課題2にい取り組んでください。
+    } else {
+        @:課題1と課題2をそれぞれ動作確認を行った後、取り組んでください。
     }
-    else 
-    {
+    </div>
+    if (int.Parse(myCookie) % 2 == 0){
+        <ol class="fs-5">
+            <li class="mb-3"><a asp-controller="Test" asp-action="Code" asp-route-testId="tmp">課題1動作確認</a></li>
+            <li class="mb-3"><a asp-controller="Test" asp-action="Code" asp-route-testId="test1">課題1</a></li>
+            <li class="mb-3"><a asp-controller="Test" asp-action="Diagram" asp-route-testId="tmp">課題2動作確認</a></li>
+            <li class="mb-3"><a asp-controller="Test" asp-action="Diagram" asp-route-testId="test2">課題2</a></li>
+        </ol>
+    } else {
+        <ol class="fs-5">
+            <li class="mb-3 p-2"><a asp-controller="Test" asp-action="Diagram" asp-route-testId="tmp">課題1動作確認</a></li>
+            <li class="mb-3 p-2"><a asp-controller="Test" asp-action="Diagram" asp-route-testId="test1">課題1</a></li>
+            <li class="mb-3 p-2"><a asp-controller="Test" asp-action="Code" asp-route-testId="tmp">課題2動作確認</a></li>
+            <li class="mb-3 p-2"><a asp-controller="Test" asp-action="Code" asp-route-testId="test2">課題2</a></li>
+        </ol>
+    }
 
-    } *@
 }
 else
 {
-    <form id="idForm" class="text-center">
+    <form id="idForm" class="text-center mt-5">
         <label for="idInput">被験者番号</label>
     <input type="text" id="idInput">
-    <button type="submit" class="btn">保存</button>
+    <button type="submit" class="btn btn-primary">保存</button>
     </form>
 }
 

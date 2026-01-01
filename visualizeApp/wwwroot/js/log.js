@@ -12,13 +12,14 @@ class LogData {
 }
 
 export async function sendLogData(eventType, className = null, methodName = null, id = null,  detail = null) {
+    let test = getCookieValue('test');
+    if (test === '-1' || test === 'tmp') 
+        return;
 
     const data = createLogEntity(eventType, className, methodName, id,  detail);
 
-    console.log("Send Log:", data);
-
     try {
-        await fetch('/Home/SaveLogData', {
+        await fetch('/Test/SaveLogData', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)

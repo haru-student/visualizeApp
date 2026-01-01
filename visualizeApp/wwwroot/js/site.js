@@ -169,6 +169,7 @@ function onViewPortChanged(e) {
 
 //初期化
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('init site');
     document.getElementById("uploadSection").style.display = "block";
     document.getElementById("visualSection").style.display = "none";
     document.getElementById('legend').classList.add('d-none');
@@ -176,4 +177,6 @@ document.addEventListener('DOMContentLoaded', function () {
     initUpload();
     initView();
     initMemoModule();
+    document.cookie = "test=; Max-Age=0; path=/";
+    document.cookie = "type=; Max-Age=0; path=/";
 });

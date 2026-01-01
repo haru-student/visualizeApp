@@ -1,4 +1,5 @@
 import { sendLogData } from "./log.js";
+import { getTestId } from "./test.js";
 
 async function initMonaco() {
   if (typeof require === 'undefined') {
@@ -20,24 +21,23 @@ async function initMonaco() {
         }
       );
       window.editorInstance = editor;
-      resolve(editor); // ← ここが超重要
+      resolve(editor); 
     });
   });
 }
 
-function getTestId() {
-  const app = document.getElementById("code-editor");
-  return app.dataset.testId; 
-}
-
 async function init() {
   const testId = getTestId();
-  const editor = await initMonaco(); 
-  const res = await fetch(`/data/${testId}/code.txt`);
-  const text = await res.text();
-  window.editorInstance.setValue(text);
-
-  sendLogData('start', null, null, null, null);
+  const editor = await initMonaco();
+  if (testId) {
+    const res = await fetch(`/data/${testId}/code.txt`);
+    const text = await res.text();
+    window.editorInstance.setValue(text);
+    document.cookie = `test=${testId}; path=/; max-age=${60 * 60 * 24}`;
+    document.cookie = `type=code; path=/; max-age=${60 * 60 * 24}`;
+    if (testId!=='tmp')
+      sendLogData('start', null, null, null, {'test': testId, 'type': 'code'});
+  }
 }
 
 init();

@@ -13,7 +13,6 @@ async function loadPadModule() {
 export function drawCallGraph(data) {
     if (getPadData === null)
       loadPadModule();
-    console.log("Edited code called", data);
     window.graphData = data;
     const svg = d3.select("#graph-layer")
     const width = +svg.attr("width") || 800;

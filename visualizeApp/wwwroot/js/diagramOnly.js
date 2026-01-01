@@ -1,6 +1,8 @@
 import { drawCallGraph } from "./callGraph.js";
+import { sendLogData } from "./log.js";
 import { initMemoModule } from "./memo.js";
 import { drawPAD } from "./pad.js";
+import { getTestId } from "./test.js";
 
 let testCallGraphPath = "";
 
@@ -33,8 +35,6 @@ function updateCallGraph() {
                         document.getElementById('legend').classList.add('d-none');
                     }
                 }
-                // テスト開始のログ送信
-                sendLogData('start', null, null, null, null);
             }
             else {
                 document.getElementById('legend').classList.add('d-none');
@@ -100,18 +100,25 @@ function extractMethodDiagram(fullDiagram, className, methodName) {
         Links: links
     };
 }
-function getTestId() {
-  const app = document.getElementById("visualSection");
-  return app.dataset.testId; 
-}
-
 function init() {
+    if (window.initializedDiagram) return;
+    console.log('init diagramOnly');
     const testId = getTestId();
-    console.log(testId);
-    testCallGraphPath = `/data/${testId}/callGraph.json`;
-    testPADPath = `/data/${testId}/padDiagram.json`;
-    initMemoModule();
-    updateCallGraph();
+    if (testId) {
+        testCallGraphPath = `/data/${testId}/callGraph.json`;
+        testPADPath = `/data/${testId}/padDiagram.json`;
+        initMemoModule();
+        updateCallGraph();
+        if (testId !== 'tmp')
+            sendLogData('start', null, null, null, {'test': testId, 'type': 'diagram'});
+
+        document.cookie = `test=${testId}; path=/; max-age=${60 * 60 * 24}`;
+        document.cookie = `type=diagram; path=/; max-age=${60 * 60 * 24}`;
+        window.initializedDiagram = true;
+    } else {
+        window.location = "/test";
+    }
 }
 
 init();
+

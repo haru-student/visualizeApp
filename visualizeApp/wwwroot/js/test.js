@@ -6,3 +6,9 @@ if (document.getElementById('idForm')){
     document.cookie = `userId=${encodeURIComponent(value)}; path=/; max-age=${60 * 60 * 24}`;
     });
 }
+
+export function getTestId() {
+  const el = document.getElementById("testHeader");
+  const value = el.dataset.testId;
+  return value ?? null;
+}

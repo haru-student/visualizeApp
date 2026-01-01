@@ -16,17 +16,18 @@ namespace visualizeApp.Controllers
             _logger = logger;
         }
         
-        public IActionResult Index()
-        {
-            return View();
-        }
-
-        public IActionResult Code(string testId)
+        public IActionResult Index(string? testId=null)
         {
             ViewData["testId"] = testId;
             return View();
         }
-        public IActionResult Diagram(string testId)
+
+        public IActionResult Code(string? testId=null)
+        {
+            ViewData["testId"] = testId;
+            return View();
+        }
+        public IActionResult Diagram(string? testId=null)
         {
             ViewData["testId"] = testId;
             return View();
