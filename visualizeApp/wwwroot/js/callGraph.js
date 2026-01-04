@@ -213,7 +213,7 @@ function openPadForNode(d) {
   setTimeout(() => {
     window.currentSimulation.stop();
   }, 1200);
-  // ===== ③ 修正ここまで =====
+  
   const args = d.parameters
     .split(",")
     .map(p => p.trim());
@@ -360,7 +360,9 @@ function getClassName(node) {
 // 引数のノードの描画
 async function drawArgNode(target, args) {
   let nodes = await getMethodCallNode();
+  let idCount = 1000; // メモのための一時的なid。要検討
   nodes.forEach(n => {
+    let clickTimeout = null;
     let c_m = n.Label;
     let text = "";
     if (n.Label.indexOf("/,,,/") !== -1) {
@@ -382,7 +384,46 @@ async function drawArgNode(target, args) {
     // グループ作成
     const argGroup = d3.select("#graph-layer")
       .append("g")
-      .attr("class", "arg-node");
+      .attr("class", "arg-node")
+      .on("click", (event, d) => {
+          // ダブルクリック判定
+          if (clickTimeout !== null) {
+              clearTimeout(clickTimeout);
+              clickTimeout = null;
+
+              closeMemoEditor();
+              handleOpenPAD(d);
+              return;
+          }
+
+          clickTimeout = setTimeout(() => {
+            let tmp = {
+              Id: idCount,
+              Class: target.label.split('.')[0],
+              Method: target.label.split('.')[1]
+            };
+
+            openMemoEditor(tmp);
+            clickTimeout = null;
+          }, 300);
+        })
+      .on("mouseenter", function (event, d) {
+        d3.select(this).select("rect")
+          .transition().duration(120)
+          .attr("stroke-width", 2); 
+        let tmp = {
+          Id: idCount,
+          Class: target.label.split('.')[0],
+          Method: target.label.split('.')[1]
+        };
+        showMemo(tmp, this);
+      })
+      .on("mouseleave", function () {
+        d3.select(this).select("rect")
+          .transition().duration(120)
+          .attr("stroke-width", 1.5); 
+        hideMemo();
+      });
 
     // text（複数行）
     const argText = argGroup.append("text")
@@ -443,6 +484,7 @@ async function drawArgNode(target, args) {
         );
       }
     );
+    idCount++;
   });
 }
 function clearArgNodes() {

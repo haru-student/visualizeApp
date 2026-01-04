@@ -2,15 +2,18 @@
   "nodes": [
     {
       "id": 0,
-      "label": "Program.Main"
+      "label": "Program.Main",
+      "parameters": ""
     },
     {
       "id": 1,
-      "label": "Program.f1"
+      "label": "Program.f1",
+      "parameters": "int[] data"
     },
     {
       "id": 2,
-      "label": "Program.f2"
+      "label": "Program.f2",
+      "parameters": "int[] data"
     }
   ],
   "links": [

@@ -2,15 +2,18 @@
   "nodes": [
     {
       "id": 0,
-      "label": "Test2.Main"
+      "label": "Test2.Main",
+      "parameters": ""
     },
     {
       "id": 1,
-      "label": "Test2.f1"
+      "label": "Test2.f1",
+      "parameters": "int[] d,int p1,bool p2"
     },
     {
       "id": 2,
-      "label": "Test2.f2"
+      "label": "Test2.f2",
+      "parameters": "int r1"
     }
   ],
   "links": [
