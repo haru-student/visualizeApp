@@ -1,38 +1,54 @@
 using System;
 
-class Program
+class Test1
 {
-    public static void Main()
+    static void Main()
     {
-        Console.WriteLine("=== Start ===");
+        int[] d = { 100, 200 };
+        int p1 = 4500;
+        int p2 = 1;
 
-        Counter.Count(3); // メソッド呼び出し（別クラス）
-
-        Console.WriteLine("=== End ===");
+        int r1 = f1(p1, p2);
+        int r2 = f2(d, r1);
     }
-}
-
-class Counter
-{
-    public static void Count(int limit)
+    static int f1(int p1, int p2)
     {
-        for (int i = 1; i <= limit; i++)
+        int f = 1;
+        if (p1 >= 2000)              
         {
-            Console.WriteLine($"Number: {i}");
-        }
-
-        int j = 0;
-        while (j < limit)
-        {
-            if (j % 2 == 0)
+            if (p1 < 5000)        
             {
-                Console.WriteLine($"Even: {j}");
+                f = 2;
+                if (p2 > 0) 
+                    f = 3;    
+            }
+            else if (p1 > 8000)    
+            {
+                f = 5;
+                if (p2 > 0)
+                {
+                    if (p2 < 10) 
+                        f = 7; 
+                }
             }
             else
-            {
-                Console.WriteLine($"Odd: {j}");
-            }
-            j++;
+                f = 4;        
         }
+        return f;
+    }
+    static int f2(int[] d, int r1)
+    {
+        int sum = 0;
+        for (int i = 0; i < d.Length; i++) 
+        {
+            int val = d[i];
+            if (val > 150) 
+                sum += val * r1; 
+            else if (val > 50)
+                sum += 50;   
+            else
+            sum += 10;                  
+        }
+        return sum;
     }
 }

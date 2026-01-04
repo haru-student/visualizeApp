@@ -100,20 +100,39 @@ function extractMethodDiagram(fullDiagram, className, methodName) {
         Links: links
     };
 }
+
+export function getMethodCallNode() {
+    return fetch(testPADPath, { cache: "no-store" })
+        .then(res => {
+            if (!res.ok) throw new Error();
+            return res.json();
+        })
+        .then(data => {
+            return data.Nodes.filter(
+                node => node.Type === "methodCall"
+            );
+        })
+        .catch(err => {
+            console.error(err);
+            return [];
+        });
+}
 function init() {
-    if (window.initializedDiagram) return;
-    console.log('init diagramOnly');
     const testId = getTestId();
     if (testId) {
         testCallGraphPath = `/data/${testId}/callGraph.json`;
         testPADPath = `/data/${testId}/padDiagram.json`;
-        initMemoModule();
         updateCallGraph();
+
+        if (window.initializedDiagram) return;
+
+        initMemoModule();
         if (testId !== 'tmp')
             sendLogData('start', null, null, null, {'test': testId, 'type': 'diagram'});
 
         document.cookie = `test=${testId}; path=/; max-age=${60 * 60 * 24}`;
         document.cookie = `type=diagram; path=/; max-age=${60 * 60 * 24}`;
+        
         window.initializedDiagram = true;
     } else {
         window.location = "/test";

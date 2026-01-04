@@ -65,7 +65,7 @@ namespace visualizeApp.Services
         }
 
         public void SaveCallGraph(
-            List<(string ClassName, string MethodName)> methodList,
+            List<(string ClassName, string MethodName, string Parameters)> methodList,
             List<(string source, string target)> linkCallGraph)
         {
             var nodes = new List<object>();
@@ -73,13 +73,13 @@ namespace visualizeApp.Services
             var labelToId = new Dictionary<string, int>();
 
             // ノードのID割り当て
-            foreach (var (cls, method) in methodList)
+            foreach (var (cls, method, param) in methodList)
             {
                 var label = $"{cls}.{method}";
                 if (!labelToId.ContainsKey(label))
                 {
                     labelToId[label] = id++;
-                    nodes.Add(new { id = labelToId[label], label });
+                    nodes.Add(new { id = labelToId[label], label, parameters = param });
                 }
             }
 

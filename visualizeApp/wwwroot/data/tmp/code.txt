@@ -1,38 +1,46 @@
+// 動作確認用のコード
 using System;
 
 class Program
 {
-    public static void Main()
+    static void Main()
     {
-        Console.WriteLine("=== Start ===");
+        int[] data = { 1, 2, 3 };
 
-        Counter.Count(3); // メソッド呼び出し（別クラス）
+        int a = f1(data);
+        int b = f2(data);
 
-        Console.WriteLine("=== End ===");
+        Console.WriteLine(a);
+        Console.WriteLine(b);
     }
-}
 
-class Counter
-{
-    public static void Count(int limit)
+    static int f1(int[] data)
     {
-        for (int i = 1; i <= limit; i++)
+        int result = 0;
+
+        for (int i = 0; i < data.Length; i++)
         {
-            Console.WriteLine($"Number: {i}");
+            if (data[i] > 0)
+            {
+                result++;
+            }
         }
 
-        int j = 0;
-        while (j < limit)
+        return result;
+    }
+
+    static int f2(int[] data)
+    {
+        int result = 0;
+
+        for (int i = 0; i < data.Length; i++)
         {
-            if (j % 2 == 0)
+            if (data[i] < 10)
             {
-                Console.WriteLine($"Even: {j}");
+                result += 2;
             }
-            else
-            {
-                Console.WriteLine($"Odd: {j}");
-            }
-            j++;
         }
+
+        return result;
     }
 }

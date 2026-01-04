@@ -1,32 +1,52 @@
 using System;
 
-class FizzBuzz
+class Test2
 {
-    public static void Main()
+    static void Main()
     {
-        for (int i = 1; i <= 100; i++)
-        {
-            judgeFizzBuzz(i);
-        }
-        Console.ReadLine("complete"); 
-    }
+        int[] d = { 50, 250 };
+        int p1 = 100;
+        bool p2 = true;
 
-    public static void judgeFizzBuzz(int i){
-            if (i % 3 == 0 && i % 5 == 0)
+        int r1 = f1(d, p1, p2);
+        int r2 = f2(r1);
+    }
+    static int f1(int[] d, int p1, bool p2)
+    {
+        int total = 0;
+        for (int i = 0; i < d.Length; i++)
+        {
+            int val = d[d.Length - 1 - i]; 
+            if (val > p1)                 
             {
-                Console.WriteLine("FizzBuzz");
+                if (val < 200)
+                {
+                    if (p2) 
+                        total += 10;    
+                }
+                else
+                {
+                    if (p2) 
+                        total += 20;  
+                }
             }
-            else if (i % 3 == 0)
-            {
-                Console.WriteLine("Fizz");
-            }
-            else if (i % 5 == 0)
-            {
-                Console.WriteLine("Buzz");
-            }
-            else
-            {
-                Console.WriteLine(i);
-            }
+        }
+
+        return total;
+    }
+    static int f2(int r1)
+    {
+        int res = r1;
+        if (r1 > 50)             
+        {
+            if (r1 > 200) 
+                res = r1 + 100;
+            else 
+                res = r1 + 50;
+        }
+        else if (r1 > 0) 
+            res = r1 + 20;
+
+        return res;
     }
 }

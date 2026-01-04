@@ -169,7 +169,6 @@ function onViewPortChanged(e) {
 
 //初期化
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('init site');
     document.getElementById("uploadSection").style.display = "block";
     document.getElementById("visualSection").style.display = "none";
     document.getElementById('legend').classList.add('d-none');

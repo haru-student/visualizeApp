@@ -32,7 +32,12 @@ namespace visualizeApp.Services
         private static string currentClassName = "";
         private static string currentMethodName = "";
 
-        public static List<(string ClassName, string MethodName)> methodList = new();
+        public static List<(
+            string ClassName,
+            string MethodName,
+            string Parameters 
+        )> methodList = new();
+
         public static List<(string source, string target)> linkCallGraph = new();
 
         // SemanticModelを静的フィールドから削除
@@ -76,7 +81,24 @@ namespace visualizeApp.Services
                 preType.Clear();
                 isElse = false;
                 currentMethodName = methodDecl.Identifier.Text;
-                methodList.Add((currentClassName, currentMethodName));
+                var methodSymbol = semanticModel.GetDeclaredSymbol(methodDecl) as IMethodSymbol;
+                string paramText = "";
+
+                if (methodSymbol != null && methodSymbol.Parameters.Length > 0)
+                {
+                    paramText = string.Join(",",
+                        methodSymbol.Parameters.Select(p =>
+                            $"{p.Type.ToDisplayString()} {p.Name}"
+                        )
+                    );
+                }
+
+                // ★ ここで parameter 文字列を保持
+                methodList.Add((
+                    currentClassName,
+                    currentMethodName,
+                    paramText
+                ));
                 AnalyzeStatements(methodDecl.Body.Statements, semanticModel);
             }
         }
@@ -100,7 +122,9 @@ namespace visualizeApp.Services
                             string calledClass = symbol.ContainingType.ToDisplayString(); // 呼び出し先クラス名
                             string calledMethod = symbol.Name;                            // 呼び出し先メソッド名
 
-                            jsonHandler.addNode(id, "methodCall", calledClass + "." + calledMethod, depth, currentClassName, currentMethodName, lineNumber);
+                            string argumentText = GetArgumentText(invocation);
+
+                            jsonHandler.addNode(id, "methodCall", invocation.ToString() + "/,,,/" + calledClass + "." + calledMethod, depth, currentClassName, currentMethodName, lineNumber);
                             CreateLink("expression"); // ← この関数はstaticなので、直接呼び出し
                             SaveCondition("expression"); // ← この関数はstaticなので、直接呼び出し
                             linkCallGraph.Add((currentClassName + "." + currentMethodName, calledClass + "." + calledMethod));
@@ -122,11 +146,55 @@ namespace visualizeApp.Services
                 }
                 else if (statement is LocalDeclarationStatementSyntax localDeclStmt)
                 {
-                    jsonHandler.addNode(id, "localDeclaration", localDeclStmt.ToString(), depth, currentClassName, currentMethodName, lineNumber);
-                    CreateLink("localDecl");
-                    SaveCondition("localDecl");
+                    var invocation = localDeclStmt
+                        .DescendantNodes()
+                        .OfType<InvocationExpressionSyntax>()
+                        .FirstOrDefault();
+
+                    if (invocation != null)
+                    {
+                        var symbol = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
+
+                        if (symbol != null && symbol.Locations.Any(loc => loc.IsInSource))
+                        {
+                            string calledClass = symbol.ContainingType.ToDisplayString();
+                            string calledMethod = symbol.Name;
+
+                            jsonHandler.addNode(
+                                id,
+                                "methodCall",
+                                localDeclStmt.ToString() + "/,,,/" + calledClass + "." + calledMethod,
+                                depth,
+                                currentClassName,
+                                currentMethodName,
+                                lineNumber
+                            );
+
+                            CreateLink("expression");
+                            SaveCondition("expression");
+
+                            linkCallGraph.Add((
+                                currentClassName + "." + currentMethodName,
+                                calledClass + "." + calledMethod
+                            ));
+                        }
+                        else
+                        {
+                            jsonHandler.addNode(id, "localDeclaration", localDeclStmt.ToString(), depth, currentClassName, currentMethodName, lineNumber);
+                            CreateLink("localDecl");
+                            SaveCondition("localDecl");
+                        }
+                    }
+                    else
+                    {
+                        jsonHandler.addNode(id, "localDeclaration", localDeclStmt.ToString(), depth, currentClassName, currentMethodName, lineNumber);
+                        CreateLink("localDecl");
+                        SaveCondition("localDecl");
+                    }
+
                     id++;
                 }
+
                 else if (statement is IfStatementSyntax ifStmt)
                 {
                     jsonHandler.addNode(id, "if", ifStmt.Condition.ToString(), depth, currentClassName, currentMethodName, lineNumber);
@@ -215,6 +283,15 @@ namespace visualizeApp.Services
                     depth--;
                     DeleteCondition();
                 }
+                // 一時的に
+                else
+                {
+                    // その他のステートメントもノードとして追加
+                    jsonHandler.addNode(id, "expression", statement.ToString(), depth, currentClassName, currentMethodName, lineNumber);
+                    CreateLink("expression");
+                    SaveCondition("expression");
+                    id++;
+                }
             }
         }
 
@@ -271,6 +348,16 @@ namespace visualizeApp.Services
                     jsonHandler.AddLink(preId[depth - 1], id, "loop", currentClassName, currentMethodName);
                 }
             }
+        }
+        static string GetArgumentText(InvocationExpressionSyntax invocation)
+        {
+            if (invocation.ArgumentList == null)
+                return "";
+
+            return string.Join(", ",
+                invocation.ArgumentList.Arguments
+                    .Select(arg => arg.Expression.ToString())
+            );
         }
     }
 }

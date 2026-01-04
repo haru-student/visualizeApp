@@ -88,6 +88,22 @@ export function getPadData(posX, posY) {
         });
 }
 
+export function getMethodCallNode() {
+    return fetch("/data/padDiagram.json", { cache: "no-store" })
+        .then(res => {
+            if (!res.ok) throw new Error();
+            return res.json();
+        })
+        .then(data => {
+            return data.Nodes.filter(
+                node => node.Type === "methodCall"
+            );
+        })
+        .catch(err => {
+            console.error(err);
+            return [];
+        });
+}
 
 function extractMethodDiagram(fullDiagram, className, methodName) {
     const nodes = fullDiagram.Nodes.filter(

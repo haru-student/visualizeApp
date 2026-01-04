@@ -2,17 +2,25 @@
   "nodes": [
     {
       "id": 0,
-      "label": "Program.Main"
+      "label": "Test1.Main"
     },
     {
       "id": 1,
-      "label": "Counter.Count"
+      "label": "Test1.f1"
+    },
+    {
+      "id": 2,
+      "label": "Test1.f2"
     }
   ],
   "links": [
     {
       "source": 0,
       "target": 1
+    },
+    {
+      "source": 0,
+      "target": 2
     }
   ]
 }
