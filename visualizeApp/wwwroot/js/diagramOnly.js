@@ -128,7 +128,7 @@ function init() {
 
         initMemoModule();
         if (testId !== 'tmp')
-            sendLogData('start', null, null, null, {'test': testId, 'type': 'diagram'});
+            sendLogData('start', null, null, null, null);
 
         document.cookie = `test=${testId}; path=/; max-age=${60 * 60 * 24}`;
         document.cookie = `type=diagram; path=/; max-age=${60 * 60 * 24}`;

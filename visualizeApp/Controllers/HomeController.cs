@@ -9,12 +9,10 @@ namespace visualizeApp.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly LoggingService _logger;
         private readonly CodeAnalysis _roslyn;
 
-        public HomeController(LoggingService logger, CodeAnalysis roslyn)
+        public HomeController(CodeAnalysis roslyn)
         {
-            _logger = logger;
             _roslyn = roslyn;
         }
         
@@ -62,18 +60,6 @@ namespace visualizeApp.Controllers
             _roslyn.Entry(fileContent);
 
             return Content("");
-        }
-
-        [HttpPost]
-        public IActionResult SaveLogData([FromBody] LogData data)
-        {
-            if (data == null)
-            {
-                return BadRequest("Invalid data: Request body is empty or malformed.");
-            }
-            _logger.appendLogData(data);
-
-            return Ok();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

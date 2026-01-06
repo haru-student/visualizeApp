@@ -36,7 +36,7 @@ async function init() {
     document.cookie = `test=${testId}; path=/; max-age=${60 * 60 * 24}`;
     document.cookie = `type=code; path=/; max-age=${60 * 60 * 24}`;
     if (testId!=='tmp')
-      sendLogData('start', null, null, null, {'test': testId, 'type': 'code'});
+      sendLogData('start', null, null, null, null);
   }
 }
 

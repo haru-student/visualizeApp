@@ -1,23 +1,24 @@
 using visualizeApp.Services;
+using Microsoft.Azure.Cosmos;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// // 本番環境時に実行
-// builder.WebHost.ConfigureKestrel(options =>
-// {
-//     options.ListenAnyIP(5000); // HTTPで全PCからアクセス可能
-// });
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<LoggingService>();
+builder.Services.AddSingleton<LogRepository>();
 builder.Services.AddSingleton<CodeAnalysis>();
 
 builder.Services.AddRouting(options =>
 {
     options.LowercaseUrls = true;
     options.LowercaseQueryStrings = true;
+});
+builder.Services.AddSingleton(s =>
+{
+    var c = builder.Configuration.GetSection("Cosmos");
+    return new CosmosClient(c["Endpoint"], c["Key"]);
 });
 
 var app = builder.Build();

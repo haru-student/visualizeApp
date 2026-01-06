@@ -1,10 +1,12 @@
 class LogData {
-    constructor(userId, eventType, location = null, detail = null) {
-        this.UserId = userId;
-        this.EventType = eventType;
-        this.Location = location;
-        this.Detail = detail;
-        this.Timestamp = new Date().toLocaleString("sv-SE", {
+    constructor(userId, testId, testType, eventType, location = null, detail = null) {
+        this.userId = userId;
+        this.testId = testId;
+        this.testType = testType;
+        this.eventType = eventType;
+        this.location = location;
+        this.detail = detail;
+        this.timestamp = new Date().toLocaleString("sv-SE", {
             timeZone: "Asia/Tokyo",
             hour12: false
         });
@@ -12,14 +14,15 @@ class LogData {
 }
 
 export async function sendLogData(eventType, className = null, methodName = null, id = null,  detail = null) {
-    let test = getCookieValue('test');
-    if (test === '-1' || test === 'tmp') 
+    let testId = getCookieValue('test');
+    let testType = getCookieValue('type');
+    if (testId === '-1' || testId === 'tmp') 
         return;
 
-    const data = createLogEntity(eventType, className, methodName, id,  detail);
+    const data = createLogEntity(testId, testType, eventType, className, methodName, id,  detail);
 
     try {
-        await fetch('/Test/SaveLogData', {
+        await fetch('/Log/SaveLogData', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -29,12 +32,12 @@ export async function sendLogData(eventType, className = null, methodName = null
     }
 }
 
-function createLogEntity(eventType, className = null, methodName = null, id = null,  detail = null) {
+function createLogEntity(testId, testType, eventType, className = null, methodName = null, id = null,  detail = null) {
     let userId = getCookieValue('userId');
     const location = (className || methodName)
         ? { Class: className, Method: methodName, NodeId: id }
         : null;
-    return new LogData(userId, eventType, location, detail);
+    return new LogData(userId, testId, testType, eventType, location, detail);
 }
 
 function getCookieValue(key) {

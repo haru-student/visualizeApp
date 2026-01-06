@@ -10,10 +10,12 @@ namespace visualizeApp.Controllers
     public class TestController : Controller
     {
         private readonly LoggingService _logger;
+        private readonly LogRepository _repo;
 
-        public TestController(LoggingService logger)
+        public TestController(LoggingService logger, LogRepository repo)
         {
             _logger = logger;
+            _repo = repo;
         }
         
         public IActionResult Index(string? testId=null)
@@ -31,18 +33,6 @@ namespace visualizeApp.Controllers
         {
             ViewData["testId"] = testId;
             return View();
-        }
-
-        [HttpPost]
-        public IActionResult SaveLogData([FromBody] LogData data)
-        {
-            if (data == null)
-            {
-                return BadRequest("Invalid data: Request body is empty or malformed.");
-            }
-            _logger.appendLogData(data);
-
-            return Ok();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
