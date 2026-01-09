@@ -4,7 +4,7 @@ let getPadData = null;
 let getMethodCallNode = null;
 
 export async function loadPadModule() {
-  if (location.pathname.startsWith("/Test")) {
+  if (location.pathname.startsWith("/Test") || location.pathname.startsWith("/test")) {
     ({ getPadData, getMethodCallNode } = await import("./diagramOnly.js"));
   } else {
     ({ getPadData, getMethodCallNode } = await import("./visualize.js"));
