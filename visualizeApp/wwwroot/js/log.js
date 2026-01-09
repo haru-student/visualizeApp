@@ -6,10 +6,7 @@ class LogData {
         this.eventType = eventType;
         this.location = location;
         this.detail = detail;
-        this.timestamp = new Date().toLocaleString("sv-SE", {
-            timeZone: "Asia/Tokyo",
-            hour12: false
-        });
+        this.timestamp = new Date().toISOString();
     }
 }
 
@@ -20,15 +17,14 @@ export async function sendLogData(eventType, className = null, methodName = null
         return;
 
     const data = createLogEntity(testId, testType, eventType, className, methodName, id,  detail);
-
     try {
-        await fetch('/Log/SaveLogData', {
+        await fetch('https://viz-app-cfbsfgc4gwbscygs.japanwest-01.azurewebsites.net/Log/SaveLogData', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
     } catch (e) {
-        console.error('ログの記録に失敗しました', data, e);
+        saveFallbackAnswer(data);
     }
 }
 
@@ -51,3 +47,22 @@ function getCookieValue(key) {
   }
   return "-1";
 }
+
+function saveFallbackAnswer(data) {
+    if (data.eventType === 'start' || data.eventType === 'submit') {
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+        const fallback = {
+            userId: data.userId,
+            testId: data.testId,
+            testType: data.testType,
+            eventType: data.eventType,
+            detail: data.detail,   
+            timestamp: data.timestamp,
+            expiresAt
+        };
+
+        localStorage.setItem(`${fallback.testId}.${fallback.eventType}`, JSON.stringify(fallback));
+    }
+}
+

@@ -63,7 +63,6 @@ function saveMemo() {
     });
   }
   panel.classList.remove("open");
-  console.log('update');
   // メモ編集ログ
   sendLogData("updateMemo", editingClass, editingMethod, editingId, {
     'Memo': textarea.value,

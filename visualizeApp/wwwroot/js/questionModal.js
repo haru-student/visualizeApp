@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function initSubmitBtn() {
     const submitBtn = document.getElementById('submitBtn');
-    submitBtn.addEventListener("click", () => {
+    submitBtn.addEventListener("click", async () => {
         let q_a = {};
         qIds.forEach(id => {
             const answer = document.getElementById(`q-${id}`).value;
@@ -68,7 +68,7 @@ function initSubmitBtn() {
         if (testId !== 'tmp') {
             var result = confirm('解答を送信しますか？');
             if (result) {
-                sendLogData('submit', null, null, null, q_a);
+                await sendLogData('submit', null, null, null, q_a);
                 window.location = "/test";
                 document.cookie = `${testId}=done; path=/; max-age=${60 * 60 * 24}`;
             }

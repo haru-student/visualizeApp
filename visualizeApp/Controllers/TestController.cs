@@ -9,12 +9,10 @@ namespace visualizeApp.Controllers
 {
     public class TestController : Controller
     {
-        private readonly LoggingService _logger;
         private readonly LogRepository _repo;
 
-        public TestController(LoggingService logger, LogRepository repo)
+        public TestController(LogRepository repo)
         {
-            _logger = logger;
             _repo = repo;
         }
         

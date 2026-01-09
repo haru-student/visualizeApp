@@ -1,4 +1,4 @@
-import { drawCallGraph } from "./callGraph.js";
+import { loadPadModule, drawCallGraph } from "./callGraph.js";
 import { sendLogData } from "./log.js";
 import { initMemoModule } from "./memo.js";
 import { drawPAD } from "./pad.js";
@@ -73,7 +73,6 @@ export function getPadData(posX, posY) {
             }
             const newPAD = JSON.stringify(filtered);
             if (newPAD === window.displayedPAD) {
-                console.log("同じPADなので再描画しません");
                 return;
             }
             d3.select("#pad-layer").selectAll("*").remove();
@@ -117,9 +116,10 @@ export function getMethodCallNode() {
             return [];
         });
 }
-function init() {
+async function init() {
     const testId = getTestId();
     if (testId) {
+        await loadPadModule();
         testCallGraphPath = `/data/${testId}/callGraph.json`;
         testPADPath = `/data/${testId}/padDiagram.json`;
         updateCallGraph();
@@ -127,11 +127,10 @@ function init() {
         if (window.initializedDiagram) return;
 
         initMemoModule();
-        if (testId !== 'tmp')
-            sendLogData('start', null, null, null, null);
-
         document.cookie = `test=${testId}; path=/; max-age=${60 * 60 * 24}`;
         document.cookie = `type=diagram; path=/; max-age=${60 * 60 * 24}`;
+        if (testId !== 'tmp')
+            sendLogData('start', null, null, null, null);
         
         window.initializedDiagram = true;
     } else {

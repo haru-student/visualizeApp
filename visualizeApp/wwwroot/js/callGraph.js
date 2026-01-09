@@ -3,17 +3,17 @@ import { closeMemoEditor, hideMemo, openMemoEditor, showMemo } from "./memo.js";
 let getPadData = null;
 let getMethodCallNode = null;
 
-async function loadPadModule() {
-  if (location.pathname.startsWith("/test")) {
+export async function loadPadModule() {
+  if (location.pathname.startsWith("/Test")) {
     ({ getPadData, getMethodCallNode } = await import("./diagramOnly.js"));
   } else {
     ({ getPadData, getMethodCallNode } = await import("./visualize.js"));
   }
 }
 
-export function drawCallGraph(data) {
-    if (getPadData === null)
-      loadPadModule();
+export async function drawCallGraph(data) {
+    if (getPadData === null || getMethodCallNode === null)
+      await loadPadModule();
     window.graphData = data;
     const svg = d3.select("#graph-layer")
     const width = +svg.attr("width") || 800;
