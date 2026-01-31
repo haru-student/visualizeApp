@@ -74,8 +74,8 @@
     },
     {
       "Id": 3,
-      "Type": "expression",
-      "Label": "f = 2",
+      "Type": "if",
+      "Label": "p2 > 0",
       "Class": "Test1",
       "Method": "f1",
       "Depth": 2,
@@ -83,84 +83,66 @@
     },
     {
       "Id": 4,
-      "Type": "if",
-      "Label": "p2 > 0",
-      "Class": "Test1",
-      "Method": "f1",
-      "Depth": 2,
-      "LineNumber": 22
-    },
-    {
-      "Id": 5,
       "Type": "expression",
       "Label": "f = 3",
       "Class": "Test1",
       "Method": "f1",
       "Depth": 3,
-      "LineNumber": 23
+      "LineNumber": 22
     },
     {
-      "Id": 6,
+      "Id": 5,
       "Type": "else if",
       "Label": "p1 > 8000",
       "Class": "Test1",
       "Method": "f1",
       "Depth": 2,
-      "LineNumber": 25
+      "LineNumber": 24
     },
     {
-      "Id": 7,
-      "Type": "expression",
-      "Label": "f = 5",
-      "Class": "Test1",
-      "Method": "f1",
-      "Depth": 3,
-      "LineNumber": 27
-    },
-    {
-      "Id": 8,
+      "Id": 6,
       "Type": "if",
       "Label": "p2 > 0",
       "Class": "Test1",
       "Method": "f1",
       "Depth": 3,
-      "LineNumber": 28
+      "LineNumber": 26
     },
     {
-      "Id": 9,
+      "Id": 7,
       "Type": "if",
       "Label": "p2 < 10",
       "Class": "Test1",
       "Method": "f1",
       "Depth": 4,
-      "LineNumber": 30
+      "LineNumber": 28
     },
     {
-      "Id": 10,
+      "Id": 8,
       "Type": "expression",
       "Label": "f = 7",
       "Class": "Test1",
       "Method": "f1",
       "Depth": 5,
-      "LineNumber": 31
+      "LineNumber": 29
     },
     {
-      "Id": 11,
+      "Id": 9,
       "Type": "expression",
       "Label": "f = 4",
       "Class": "Test1",
       "Method": "f1",
       "Depth": 3,
-      "LineNumber": 35
+      "LineNumber": 33
     },
     {
-      "Id": 12,
+      "Id": 10,
       "Type": "expression",
       "Label": "return f;",
       "Class": "Test1",
       "Method": "f1",
       "Depth": 0,
-      "LineNumber": 37
+      "LineNumber": 35
     },
     {
       "Id": 0,
@@ -169,7 +151,7 @@
       "Class": "Test1",
       "Method": "f2",
       "Depth": 0,
-      "LineNumber": 41
+      "LineNumber": 39
     },
     {
       "Id": 1,
@@ -178,7 +160,7 @@
       "Class": "Test1",
       "Method": "f2",
       "Depth": 0,
-      "LineNumber": 42
+      "LineNumber": 40
     },
     {
       "Id": 2,
@@ -187,7 +169,7 @@
       "Class": "Test1",
       "Method": "f2",
       "Depth": 1,
-      "LineNumber": 44
+      "LineNumber": 42
     },
     {
       "Id": 3,
@@ -196,7 +178,7 @@
       "Class": "Test1",
       "Method": "f2",
       "Depth": 1,
-      "LineNumber": 45
+      "LineNumber": 43
     },
     {
       "Id": 4,
@@ -205,7 +187,7 @@
       "Class": "Test1",
       "Method": "f2",
       "Depth": 2,
-      "LineNumber": 46
+      "LineNumber": 44
     },
     {
       "Id": 5,
@@ -214,7 +196,7 @@
       "Class": "Test1",
       "Method": "f2",
       "Depth": 2,
-      "LineNumber": 47
+      "LineNumber": 45
     },
     {
       "Id": 6,
@@ -223,7 +205,7 @@
       "Class": "Test1",
       "Method": "f2",
       "Depth": 3,
-      "LineNumber": 48
+      "LineNumber": 46
     },
     {
       "Id": 7,
@@ -232,7 +214,7 @@
       "Class": "Test1",
       "Method": "f2",
       "Depth": 3,
-      "LineNumber": 50
+      "LineNumber": 48
     },
     {
       "Id": 8,
@@ -241,7 +223,7 @@
       "Class": "Test1",
       "Method": "f2",
       "Depth": 0,
-      "LineNumber": 52
+      "LineNumber": 50
     }
   ],
   "Links": [
@@ -297,21 +279,21 @@
     {
       "Node1": 3,
       "Node2": 4,
-      "Type": "normal",
-      "Class": "Test1",
-      "Method": "f1"
-    },
-    {
-      "Node1": 4,
-      "Node2": 5,
       "Type": "true",
       "Class": "Test1",
       "Method": "f1"
     },
     {
       "Node1": 2,
-      "Node2": 6,
+      "Node2": 5,
       "Type": "false",
+      "Class": "Test1",
+      "Method": "f1"
+    },
+    {
+      "Node1": 5,
+      "Node2": 6,
+      "Type": "true",
       "Class": "Test1",
       "Method": "f1"
     },
@@ -325,34 +307,20 @@
     {
       "Node1": 7,
       "Node2": 8,
-      "Type": "normal",
+      "Type": "true",
       "Class": "Test1",
       "Method": "f1"
     },
     {
-      "Node1": 8,
+      "Node1": 5,
       "Node2": 9,
-      "Type": "true",
-      "Class": "Test1",
-      "Method": "f1"
-    },
-    {
-      "Node1": 9,
-      "Node2": 10,
-      "Type": "true",
-      "Class": "Test1",
-      "Method": "f1"
-    },
-    {
-      "Node1": 6,
-      "Node2": 11,
       "Type": "false",
       "Class": "Test1",
       "Method": "f1"
     },
     {
       "Node1": 1,
-      "Node2": 12,
+      "Node2": 10,
       "Type": "normal",
       "Class": "Test1",
       "Method": "f1"

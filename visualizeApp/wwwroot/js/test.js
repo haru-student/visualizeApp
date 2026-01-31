@@ -4,6 +4,7 @@ if (document.getElementById('idForm')){
 
     // Cookie保存（有効期限1日）
     document.cookie = `userId=${encodeURIComponent(value)}; path=/; max-age=${60 * 60 * 24}`;
+    document.cookie = `uniqueId=${encodeURIComponent(crypto.randomUUID())}; path=/; max-age=${60 * 60 * 24}`;
     });
 }
 

@@ -24,6 +24,12 @@ class Program
             {
                 result++;
             }
+            else if (data[i] == 0) {
+                result--;
+            }
+            else {
+                result += 2;
+            }
         }
 
         return result;

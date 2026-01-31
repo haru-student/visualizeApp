@@ -18,13 +18,11 @@ class Test1
         {
             if (p1 < 5000)        
             {
-                f = 2;
                 if (p2 > 0) 
                     f = 3;    
             }
             else if (p1 > 8000)    
             {
-                f = 5;
                 if (p2 > 0)
                 {
                     if (p2 < 10) 

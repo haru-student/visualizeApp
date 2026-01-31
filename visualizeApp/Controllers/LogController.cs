@@ -26,6 +26,7 @@ namespace visualizeApp.Controllers
                 var log = new LogData
                 {
                     id = Guid.NewGuid().ToString(),
+                    uniqueId = dto.uniqueId,
                     userId = dto.userId,
                     testId = dto.testId,
                     testType = dto.testType,

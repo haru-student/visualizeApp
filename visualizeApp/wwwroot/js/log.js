@@ -1,5 +1,6 @@
 class LogData {
-    constructor(userId, testId, testType, eventType, location = null, detail = null) {
+    constructor(uniqueId, userId, testId, testType, eventType, location = null, detail = null) {
+        this.uniqueId = uniqueId;
         this.userId = userId;
         this.testId = testId;
         this.testType = testType;
@@ -16,7 +17,9 @@ export async function sendLogData(eventType, className = null, methodName = null
     if (testId === '-1' || testId === 'tmp') 
         return;
 
-    const data = createLogEntity(testId, testType, eventType, className, methodName, id,  detail);
+    let uniqueId = getCookieValue('uniqueId');
+
+    const data = createLogEntity(uniqueId, testId, testType, eventType, className, methodName, id,  detail);
     try {
         await fetch('https://viz-app-cfbsfgc4gwbscygs.japanwest-01.azurewebsites.net/Log/SaveLogData', {
             method: 'POST',
@@ -28,12 +31,12 @@ export async function sendLogData(eventType, className = null, methodName = null
     }
 }
 
-function createLogEntity(testId, testType, eventType, className = null, methodName = null, id = null,  detail = null) {
+function createLogEntity(uniqueId, testId, testType, eventType, className = null, methodName = null, id = null,  detail = null) {
     let userId = getCookieValue('userId');
     const location = (className || methodName)
         ? { Class: className, Method: methodName, NodeId: id }
         : null;
-    return new LogData(userId, testId, testType, eventType, location, detail);
+    return new LogData(uniqueId, userId, testId, testType, eventType, location, detail);
 }
 
 function getCookieValue(key) {
@@ -53,6 +56,7 @@ function saveFallbackAnswer(data) {
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
         const fallback = {
+            uniqueId: data.uniqueId,
             userId: data.userId,
             testId: data.testId,
             testType: data.testType,

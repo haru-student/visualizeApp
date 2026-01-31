@@ -12,6 +12,7 @@
   {
     "id": 3,
     "question": "f1は入力に対してどのような値を出力するか説明してください。",
-    "type": "textarea"
+    "type": "textarea",
+    "placeholder": "例）p1が...の時、...を返す"
   }
 ]

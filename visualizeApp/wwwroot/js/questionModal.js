@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <label for="q-${q.id}" class="form-label fw-bold">Q${q.id}. ${q.question}</label>`;
             
             if (q.type === 'textarea') {
-                html += `<textarea class="form-control" name="q-${q.id}" id="q-${q.id}" rows="5"></textarea>`;
+                html += `<textarea class="form-control" name="q-${q.id}" id="q-${q.id}" rows="5" placeholder="${q.placeholder}"></textarea>`;
             }  else if (q.type === 'text') {
                 html += `<input type="text" class="form-control" name="q-${q.id}" id="q-${q.id}">`;
             }
