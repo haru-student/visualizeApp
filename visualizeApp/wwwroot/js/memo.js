@@ -40,14 +40,14 @@ export function openMemoEditor(node) {
   }
   // 表示
   panel.classList.add("open");
-  sendLogData(1, 'openMemoEditor', editingClass, editingMethod, editingId, null);
+  sendLogData('openMemoEditor', editingClass, editingMethod, editingId, null);
 }
 
 export function closeMemoEditor() {
   if (!panel.classList.contains("open"))
     return;
   panel.classList.remove("open");
-  sendLogData(1, 'closeMemoEditor', editingClass, editingMethod, editingId, null);
+  sendLogData('closeMemoEditor', editingClass, editingMethod, editingId, null);
 }
 
 function saveMemo() {
@@ -64,7 +64,7 @@ function saveMemo() {
   }
   panel.classList.remove("open");
   // メモ編集ログ
-  sendLogData(1, "updateMemo", editingClass, editingMethod, editingId, {
+  sendLogData("updateMemo", editingClass, editingMethod, editingId, {
     'Memo': textarea.value,
   });
 }
@@ -113,7 +113,7 @@ export function showMemo(detail, element) {
       tip.show({ Memo: memo }, element);
       IsTipShown = true;
       // メモ表示ログ
-      sendLogData(1, 'showMemo', hoverClass, hoverMethod, hoverId, {'Memo': memo});
+      sendLogData('showMemo', hoverClass, hoverMethod, hoverId, {'Memo': memo});
     } catch (e) {
       console.warn("Tooltip failed:", e, element);
     }
@@ -134,5 +134,5 @@ if (memoTimer !== null) {
   tip.hide();
   // メモ非表示ログ
   const memo = getMemoData(hoverClass, hoverMethod, hoverId) !== null ? getMemoData(hoverClass, hoverMethod, hoverId).Memo : null;
-  sendLogData(1, 'hideMemo', hoverClass, hoverMethod, hoverId, {'Memo': memo});
+  sendLogData('hideMemo', hoverClass, hoverMethod, hoverId, {'Memo': memo});
 }

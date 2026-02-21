@@ -72,8 +72,8 @@ function initMonaco() {
                         return;
                     }
                     updateCallGraph();
-                    // テスト開始のログ送信
-                    sendLogData(1, 'start', null, null, null, null);
+                    // 開始のログ送信
+                    sendLogData('start', null, null, null, null);
                 }, 1000);
             });
         });
@@ -115,12 +115,15 @@ function initUpload() {
 function initView() {
     document.getElementById('toggleEditor').addEventListener('change', updateView);
     document.getElementById('toggleVisual').addEventListener('change', updateView);
+    const mq = window.matchMedia('(max-width: 767px)');
+    mq.addEventListener('change', onViewPortChanged);
+    onViewPortChanged();
 }
 
 //画面表示の変更。エディターと可視化の標示
 function updateView() {
-    const editorCol = document.querySelector('.col-4');
-    const visualCol = document.querySelector('.col-8');
+    const editorCol = document.getElementById('editor-col');
+    const visualCol = document.getElementById('visual-col');
 
     const showEditor = document.getElementById('toggleEditor').checked;
     const showVisual = document.getElementById('toggleVisual').checked;
@@ -135,12 +138,32 @@ function updateView() {
         editorCol.classList.add('w-100');
         visualCol.classList.remove('w-100');
     } else if (showVisual) {
-        visualCol.classList.add('w-100');
         editorCol.classList.remove('w-100');
+        visualCol.classList.add('w-100');
+    } else {
+        editorCol.classList.remove('w-100');
+        visualCol.classList.remove('w-100');
     }
 
     if (window.editorInstance) {
         window.editorInstance.layout();
+    }
+}
+
+function onViewPortChanged(e) {
+    const editorCol = document.getElementById('editor-col');
+    const uploadMessage = document.getElementById('uploadMessage');
+    const visualCol = document.getElementById('visual-col');
+    const isMobile = e?.matches ?? window.matchMedia('(max-width: 767px)').matches;
+
+    if (isMobile) {
+        uploadMessage.textContent = 'csファイルをアップロードしてください';
+        editorCol.classList.add('d-none');
+        visualCol.classList.add('w-100');
+        visualCol.classList.remove('d-none');
+    } else {
+        uploadMessage.textContent = 'コードを書くか、csファイルをアップロードしてください';
+        updateView();
     }
 }
 
@@ -153,4 +176,6 @@ document.addEventListener('DOMContentLoaded', function () {
     initUpload();
     initView();
     initMemoModule();
+    document.cookie = "test=; Max-Age=0; path=/";
+    document.cookie = "type=; Max-Age=0; path=/";
 });

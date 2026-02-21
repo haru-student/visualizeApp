@@ -1,18 +1,21 @@
-import { drawCallGraph } from "./callGraph.js";
+import { loadPadModule, drawCallGraph } from "./callGraph.js";
+import { sendLogData } from "./log.js";
+import { initMemoModule } from "./memo.js";
 import { drawPAD } from "./pad.js";
+import { getTestId } from "./test.js";
+
+let testCallGraphPath = "";
 
 let callGraphData = "";
 // padDiagram.json の存在チェックと可視化
-export function updateCallGraph() {
-    fetch("/data/callGraph.json", { cache: "no-store" })
+function updateCallGraph() {
+    fetch(testCallGraphPath, { cache: "no-store" })
         .then(res => {
             if (!res.ok) throw new Error();
             return res.json();
         })
         .then(data => {
             if (data) {
-                document.getElementById("uploadSection").style.display = "none";
-                document.getElementById("visualSection").style.display = "block";
                 document.getElementById('legend').classList.remove('d-none');
                 const newData = JSON.stringify(data);
                 if (newData != callGraphData) {
@@ -29,26 +32,20 @@ export function updateCallGraph() {
                         getPadData(50, 30);
                     }
                     else if(data.nodes.length === 0){
-                        document.getElementById("uploadSection").style.display = "block";
-                        document.getElementById("visualSection").style.display = "none";
                         document.getElementById('legend').classList.add('d-none');
                     }
                 }
             }
             else {
-                 document.getElementById("uploadSection").style.display = "block";
-                document.getElementById("visualSection").style.display = "none";
                 document.getElementById('legend').classList.add('d-none');
             }
         })
         .catch(() => {
-            document.getElementById("uploadButton").disabled = false;
-            document.getElementById("uploadSection").style.display = "block";
-            document.getElementById("visualSection").style.display = "none";
             document.getElementById('legend').classList.add('d-none');
         });
 }
 
+let testPADPath = "";
 // PADで標示しているメソッド
 window.displayedMethods = null;
 window.displayedPAD = "";
@@ -62,7 +59,7 @@ export function getPadData(posX, posY) {
         return;
     }
 
-    fetch("/data/padDiagram.json", { cache: "no-store" })
+    fetch(testPADPath, { cache: "no-store" })
         .then(res => {
             if (!res.ok) throw new Error();
             return res.json();
@@ -76,7 +73,6 @@ export function getPadData(posX, posY) {
             }
             const newPAD = JSON.stringify(filtered);
             if (newPAD === window.displayedPAD) {
-                console.log("同じPADなので再描画しません");
                 return;
             }
             d3.select("#pad-layer").selectAll("*").remove();
@@ -88,22 +84,6 @@ export function getPadData(posX, posY) {
         });
 }
 
-export function getMethodCallNode() {
-    return fetch("/data/padDiagram.json", { cache: "no-store" })
-        .then(res => {
-            if (!res.ok) throw new Error();
-            return res.json();
-        })
-        .then(data => {
-            return data.Nodes.filter(
-                node => node.Type === "methodCall"
-            );
-        })
-        .catch(err => {
-            console.error(err);
-            return [];
-        });
-}
 
 function extractMethodDiagram(fullDiagram, className, methodName) {
     const nodes = fullDiagram.Nodes.filter(
@@ -119,3 +99,44 @@ function extractMethodDiagram(fullDiagram, className, methodName) {
         Links: links
     };
 }
+
+export function getMethodCallNode() {
+    return fetch(testPADPath, { cache: "no-store" })
+        .then(res => {
+            if (!res.ok) throw new Error();
+            return res.json();
+        })
+        .then(data => {
+            return data.Nodes.filter(
+                node => node.Type === "methodCall"
+            );
+        })
+        .catch(err => {
+            console.error(err);
+            return [];
+        });
+}
+async function init() {
+    const testId = getTestId();
+    if (testId) {
+        await loadPadModule();
+        testCallGraphPath = `/data/${testId}/callGraph.json`;
+        testPADPath = `/data/${testId}/padDiagram.json`;
+        updateCallGraph();
+
+        if (window.initializedDiagram) return;
+
+        initMemoModule();
+        document.cookie = `test=${testId}; path=/; max-age=${60 * 60 * 24}`;
+        document.cookie = `type=diagram; path=/; max-age=${60 * 60 * 24}`;
+        if (testId !== 'tmp')
+            sendLogData('start', null, null, null, null);
+        
+        window.initializedDiagram = true;
+    } else {
+        window.location = "/test";
+    }
+}
+
+init();
+

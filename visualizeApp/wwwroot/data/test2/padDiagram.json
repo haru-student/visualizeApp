@@ -1,0 +1,353 @@
+{
+  "Nodes": [
+    {
+      "Id": 0,
+      "Type": "localDeclaration",
+      "Label": "int[] d = { 50, 250 };",
+      "Class": "Test2",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 7
+    },
+    {
+      "Id": 1,
+      "Type": "localDeclaration",
+      "Label": "int p1 = 100;",
+      "Class": "Test2",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 8
+    },
+    {
+      "Id": 2,
+      "Type": "localDeclaration",
+      "Label": "bool p2 = true;",
+      "Class": "Test2",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 9
+    },
+    {
+      "Id": 3,
+      "Type": "methodCall",
+      "Label": "int r1 = f1(d, p1, p2);/,,,/Test2.f1",
+      "Class": "Test2",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 11
+    },
+    {
+      "Id": 4,
+      "Type": "methodCall",
+      "Label": "int r2 = f2(r1);/,,,/Test2.f2",
+      "Class": "Test2",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 12
+    },
+    {
+      "Id": 0,
+      "Type": "localDeclaration",
+      "Label": "int total = 0;",
+      "Class": "Test2",
+      "Method": "f1",
+      "Depth": 0,
+      "LineNumber": 16
+    },
+    {
+      "Id": 1,
+      "Type": "loop",
+      "Label": "i = 0;i < d.Length;i++",
+      "Class": "Test2",
+      "Method": "f1",
+      "Depth": 0,
+      "LineNumber": 17
+    },
+    {
+      "Id": 2,
+      "Type": "localDeclaration",
+      "Label": "int val = d[d.Length - 1 - i];",
+      "Class": "Test2",
+      "Method": "f1",
+      "Depth": 1,
+      "LineNumber": 19
+    },
+    {
+      "Id": 3,
+      "Type": "if",
+      "Label": "val > p1",
+      "Class": "Test2",
+      "Method": "f1",
+      "Depth": 1,
+      "LineNumber": 20
+    },
+    {
+      "Id": 4,
+      "Type": "if",
+      "Label": "val < 200",
+      "Class": "Test2",
+      "Method": "f1",
+      "Depth": 2,
+      "LineNumber": 22
+    },
+    {
+      "Id": 5,
+      "Type": "if",
+      "Label": "p2",
+      "Class": "Test2",
+      "Method": "f1",
+      "Depth": 3,
+      "LineNumber": 24
+    },
+    {
+      "Id": 6,
+      "Type": "expression",
+      "Label": "total += 10",
+      "Class": "Test2",
+      "Method": "f1",
+      "Depth": 4,
+      "LineNumber": 25
+    },
+    {
+      "Id": 7,
+      "Type": "if",
+      "Label": "p2",
+      "Class": "Test2",
+      "Method": "f1",
+      "Depth": 3,
+      "LineNumber": 29
+    },
+    {
+      "Id": 8,
+      "Type": "expression",
+      "Label": "total += 20",
+      "Class": "Test2",
+      "Method": "f1",
+      "Depth": 4,
+      "LineNumber": 30
+    },
+    {
+      "Id": 9,
+      "Type": "expression",
+      "Label": "return total;",
+      "Class": "Test2",
+      "Method": "f1",
+      "Depth": 0,
+      "LineNumber": 35
+    },
+    {
+      "Id": 0,
+      "Type": "localDeclaration",
+      "Label": "int res = r1;",
+      "Class": "Test2",
+      "Method": "f2",
+      "Depth": 0,
+      "LineNumber": 39
+    },
+    {
+      "Id": 1,
+      "Type": "if",
+      "Label": "r1 > 50",
+      "Class": "Test2",
+      "Method": "f2",
+      "Depth": 0,
+      "LineNumber": 40
+    },
+    {
+      "Id": 2,
+      "Type": "if",
+      "Label": "r1 > 200",
+      "Class": "Test2",
+      "Method": "f2",
+      "Depth": 1,
+      "LineNumber": 42
+    },
+    {
+      "Id": 3,
+      "Type": "expression",
+      "Label": "res = r1 + 100",
+      "Class": "Test2",
+      "Method": "f2",
+      "Depth": 2,
+      "LineNumber": 43
+    },
+    {
+      "Id": 4,
+      "Type": "expression",
+      "Label": "res = r1 + 50",
+      "Class": "Test2",
+      "Method": "f2",
+      "Depth": 2,
+      "LineNumber": 45
+    },
+    {
+      "Id": 5,
+      "Type": "else if",
+      "Label": "r1 > 0",
+      "Class": "Test2",
+      "Method": "f2",
+      "Depth": 1,
+      "LineNumber": 47
+    },
+    {
+      "Id": 6,
+      "Type": "expression",
+      "Label": "res = r1 + 20",
+      "Class": "Test2",
+      "Method": "f2",
+      "Depth": 2,
+      "LineNumber": 48
+    },
+    {
+      "Id": 7,
+      "Type": "expression",
+      "Label": "return res;",
+      "Class": "Test2",
+      "Method": "f2",
+      "Depth": 0,
+      "LineNumber": 50
+    }
+  ],
+  "Links": [
+    {
+      "Node1": 0,
+      "Node2": 1,
+      "Type": "normal",
+      "Class": "Test2",
+      "Method": "Main"
+    },
+    {
+      "Node1": 1,
+      "Node2": 2,
+      "Type": "normal",
+      "Class": "Test2",
+      "Method": "Main"
+    },
+    {
+      "Node1": 2,
+      "Node2": 3,
+      "Type": "normal",
+      "Class": "Test2",
+      "Method": "Main"
+    },
+    {
+      "Node1": 3,
+      "Node2": 4,
+      "Type": "normal",
+      "Class": "Test2",
+      "Method": "Main"
+    },
+    {
+      "Node1": 0,
+      "Node2": 1,
+      "Type": "normal",
+      "Class": "Test2",
+      "Method": "f1"
+    },
+    {
+      "Node1": 1,
+      "Node2": 2,
+      "Type": "loop",
+      "Class": "Test2",
+      "Method": "f1"
+    },
+    {
+      "Node1": 2,
+      "Node2": 3,
+      "Type": "normal",
+      "Class": "Test2",
+      "Method": "f1"
+    },
+    {
+      "Node1": 3,
+      "Node2": 4,
+      "Type": "true",
+      "Class": "Test2",
+      "Method": "f1"
+    },
+    {
+      "Node1": 4,
+      "Node2": 5,
+      "Type": "true",
+      "Class": "Test2",
+      "Method": "f1"
+    },
+    {
+      "Node1": 5,
+      "Node2": 6,
+      "Type": "true",
+      "Class": "Test2",
+      "Method": "f1"
+    },
+    {
+      "Node1": 4,
+      "Node2": 7,
+      "Type": "false",
+      "Class": "Test2",
+      "Method": "f1"
+    },
+    {
+      "Node1": 7,
+      "Node2": 8,
+      "Type": "true",
+      "Class": "Test2",
+      "Method": "f1"
+    },
+    {
+      "Node1": 1,
+      "Node2": 9,
+      "Type": "normal",
+      "Class": "Test2",
+      "Method": "f1"
+    },
+    {
+      "Node1": 0,
+      "Node2": 1,
+      "Type": "normal",
+      "Class": "Test2",
+      "Method": "f2"
+    },
+    {
+      "Node1": 1,
+      "Node2": 2,
+      "Type": "true",
+      "Class": "Test2",
+      "Method": "f2"
+    },
+    {
+      "Node1": 2,
+      "Node2": 3,
+      "Type": "true",
+      "Class": "Test2",
+      "Method": "f2"
+    },
+    {
+      "Node1": 2,
+      "Node2": 4,
+      "Type": "false",
+      "Class": "Test2",
+      "Method": "f2"
+    },
+    {
+      "Node1": 1,
+      "Node2": 5,
+      "Type": "false",
+      "Class": "Test2",
+      "Method": "f2"
+    },
+    {
+      "Node1": 5,
+      "Node2": 6,
+      "Type": "true",
+      "Class": "Test2",
+      "Method": "f2"
+    },
+    {
+      "Node1": 1,
+      "Node2": 7,
+      "Type": "normal",
+      "Class": "Test2",
+      "Method": "f2"
+    }
+  ]
+}

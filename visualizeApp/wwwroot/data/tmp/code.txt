@@ -1,0 +1,52 @@
+// 動作確認用のコード
+using System;
+
+class Program
+{
+    static void Main()
+    {
+        int[] data = { 1, 2, 3 };
+
+        int a = f1(data);
+        int b = f2(data);
+
+        Console.WriteLine(a);
+        Console.WriteLine(b);
+    }
+
+    static int f1(int[] data)
+    {
+        int result = 0;
+
+        for (int i = 0; i < data.Length; i++)
+        {
+            if (data[i] > 0)
+            {
+                result++;
+            }
+            else if (data[i] == 0) {
+                result--;
+            }
+            else {
+                result += 2;
+            }
+        }
+
+        return result;
+    }
+
+    static int f2(int[] data)
+    {
+        int result = 0;
+
+        for (int i = 0; i < data.Length; i++)
+        {
+            if (data[i] < 10)
+            {
+                result += 2;
+            }
+        }
+
+        return result;
+    }
+}

@@ -1,0 +1,52 @@
+using System;
+
+class Test2
+{
+    static void Main()
+    {
+        int[] d = { 50, 250 };
+        int p1 = 100;
+        bool p2 = true;
+
+        int r1 = f1(d, p1, p2);
+        int r2 = f2(r1);
+    }
+    static int f1(int[] d, int p1, bool p2)
+    {
+        int total = 0;
+        for (int i = 0; i < d.Length; i++)
+        {
+            int val = d[d.Length - 1 - i]; 
+            if (val > p1)                 
+            {
+                if (val < 200)
+                {
+                    if (p2) 
+                        total += 10;    
+                }
+                else
+                {
+                    if (p2) 
+                        total += 20;  
+                }
+            }
+        }
+
+        return total;
+    }
+    static int f2(int r1)
+    {
+        int res = r1;
+        if (r1 > 50)             
+        {
+            if (r1 > 200) 
+                res = r1 + 100;
+            else 
+                res = r1 + 50;
+        }
+        else if (r1 > 0) 
+            res = r1 + 20;
+
+        return res;
+    }
+}

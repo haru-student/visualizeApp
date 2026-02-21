@@ -1,0 +1,273 @@
+{
+  "Nodes": [
+    {
+      "Id": 0,
+      "Type": "localDeclaration",
+      "Label": "int[] data = { 1, 2, 3 };",
+      "Class": "Program",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 8
+    },
+    {
+      "Id": 1,
+      "Type": "methodCall",
+      "Label": "int a = f1(data);/,,,/Program.f1",
+      "Class": "Program",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 10
+    },
+    {
+      "Id": 2,
+      "Type": "methodCall",
+      "Label": "int b = f2(data);/,,,/Program.f2",
+      "Class": "Program",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 11
+    },
+    {
+      "Id": 3,
+      "Type": "expression",
+      "Label": "Console.WriteLine(a)",
+      "Class": "Program",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 13
+    },
+    {
+      "Id": 4,
+      "Type": "expression",
+      "Label": "Console.WriteLine(b)",
+      "Class": "Program",
+      "Method": "Main",
+      "Depth": 0,
+      "LineNumber": 14
+    },
+    {
+      "Id": 0,
+      "Type": "localDeclaration",
+      "Label": "int result = 0;",
+      "Class": "Program",
+      "Method": "f1",
+      "Depth": 0,
+      "LineNumber": 19
+    },
+    {
+      "Id": 1,
+      "Type": "loop",
+      "Label": "i = 0;i < data.Length;i++",
+      "Class": "Program",
+      "Method": "f1",
+      "Depth": 0,
+      "LineNumber": 21
+    },
+    {
+      "Id": 2,
+      "Type": "if",
+      "Label": "data[i] > 0",
+      "Class": "Program",
+      "Method": "f1",
+      "Depth": 1,
+      "LineNumber": 23
+    },
+    {
+      "Id": 3,
+      "Type": "expression",
+      "Label": "result++",
+      "Class": "Program",
+      "Method": "f1",
+      "Depth": 2,
+      "LineNumber": 25
+    },
+    {
+      "Id": 4,
+      "Type": "else if",
+      "Label": "data[i] == 0",
+      "Class": "Program",
+      "Method": "f1",
+      "Depth": 2,
+      "LineNumber": 27
+    },
+    {
+      "Id": 5,
+      "Type": "expression",
+      "Label": "result--",
+      "Class": "Program",
+      "Method": "f1",
+      "Depth": 3,
+      "LineNumber": 28
+    },
+    {
+      "Id": 6,
+      "Type": "expression",
+      "Label": "result += 2",
+      "Class": "Program",
+      "Method": "f1",
+      "Depth": 3,
+      "LineNumber": 31
+    },
+    {
+      "Id": 7,
+      "Type": "expression",
+      "Label": "return result;",
+      "Class": "Program",
+      "Method": "f1",
+      "Depth": 0,
+      "LineNumber": 35
+    },
+    {
+      "Id": 0,
+      "Type": "localDeclaration",
+      "Label": "int result = 0;",
+      "Class": "Program",
+      "Method": "f2",
+      "Depth": 0,
+      "LineNumber": 40
+    },
+    {
+      "Id": 1,
+      "Type": "loop",
+      "Label": "i = 0;i < data.Length;i++",
+      "Class": "Program",
+      "Method": "f2",
+      "Depth": 0,
+      "LineNumber": 42
+    },
+    {
+      "Id": 2,
+      "Type": "if",
+      "Label": "data[i] < 10",
+      "Class": "Program",
+      "Method": "f2",
+      "Depth": 1,
+      "LineNumber": 44
+    },
+    {
+      "Id": 3,
+      "Type": "expression",
+      "Label": "result += 2",
+      "Class": "Program",
+      "Method": "f2",
+      "Depth": 2,
+      "LineNumber": 46
+    },
+    {
+      "Id": 4,
+      "Type": "expression",
+      "Label": "return result;",
+      "Class": "Program",
+      "Method": "f2",
+      "Depth": 0,
+      "LineNumber": 50
+    }
+  ],
+  "Links": [
+    {
+      "Node1": 0,
+      "Node2": 1,
+      "Type": "normal",
+      "Class": "Program",
+      "Method": "Main"
+    },
+    {
+      "Node1": 1,
+      "Node2": 2,
+      "Type": "normal",
+      "Class": "Program",
+      "Method": "Main"
+    },
+    {
+      "Node1": 2,
+      "Node2": 3,
+      "Type": "normal",
+      "Class": "Program",
+      "Method": "Main"
+    },
+    {
+      "Node1": 3,
+      "Node2": 4,
+      "Type": "normal",
+      "Class": "Program",
+      "Method": "Main"
+    },
+    {
+      "Node1": 0,
+      "Node2": 1,
+      "Type": "normal",
+      "Class": "Program",
+      "Method": "f1"
+    },
+    {
+      "Node1": 1,
+      "Node2": 2,
+      "Type": "loop",
+      "Class": "Program",
+      "Method": "f1"
+    },
+    {
+      "Node1": 2,
+      "Node2": 3,
+      "Type": "true",
+      "Class": "Program",
+      "Method": "f1"
+    },
+    {
+      "Node1": 2,
+      "Node2": 4,
+      "Type": "false",
+      "Class": "Program",
+      "Method": "f1"
+    },
+    {
+      "Node1": 4,
+      "Node2": 5,
+      "Type": "true",
+      "Class": "Program",
+      "Method": "f1"
+    },
+    {
+      "Node1": 4,
+      "Node2": 6,
+      "Type": "false",
+      "Class": "Program",
+      "Method": "f1"
+    },
+    {
+      "Node1": 1,
+      "Node2": 7,
+      "Type": "normal",
+      "Class": "Program",
+      "Method": "f1"
+    },
+    {
+      "Node1": 0,
+      "Node2": 1,
+      "Type": "normal",
+      "Class": "Program",
+      "Method": "f2"
+    },
+    {
+      "Node1": 1,
+      "Node2": 2,
+      "Type": "loop",
+      "Class": "Program",
+      "Method": "f2"
+    },
+    {
+      "Node1": 2,
+      "Node2": 3,
+      "Type": "true",
+      "Class": "Program",
+      "Method": "f2"
+    },
+    {
+      "Node1": 1,
+      "Node2": 4,
+      "Type": "normal",
+      "Class": "Program",
+      "Method": "f2"
+    }
+  ]
+}

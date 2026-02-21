@@ -1,0 +1,29 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "label": "Program.Main",
+      "parameters": ""
+    },
+    {
+      "id": 1,
+      "label": "Program.f1",
+      "parameters": "int[] data"
+    },
+    {
+      "id": 2,
+      "label": "Program.f2",
+      "parameters": "int[] data"
+    }
+  ],
+  "links": [
+    {
+      "source": 0,
+      "target": 1
+    },
+    {
+      "source": 0,
+      "target": 2
+    }
+  ]
+}

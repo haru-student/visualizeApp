@@ -10,6 +10,7 @@ namespace visualizeApp.Services
     public class LoggingService
     {
         private readonly string _logFilePath;
+        private static readonly object _lock = new();
 
         public LoggingService(IWebHostEnvironment env)
         {
@@ -33,7 +34,10 @@ namespace visualizeApp.Services
                 Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) 
             };
             string json = JsonSerializer.Serialize(data, options);
-            File.AppendAllText(_logFilePath, json + Environment.NewLine);
+            lock (_lock)
+            {
+                File.AppendAllText(_logFilePath, json + Environment.NewLine);
+            }
         }
     }
 }

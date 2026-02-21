@@ -1,0 +1,29 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "label": "Test1.Main",
+      "parameters": ""
+    },
+    {
+      "id": 1,
+      "label": "Test1.f1",
+      "parameters": "int p1,int p2"
+    },
+    {
+      "id": 2,
+      "label": "Test1.f2",
+      "parameters": "int[] d,int r1"
+    }
+  ],
+  "links": [
+    {
+      "source": 0,
+      "target": 1
+    },
+    {
+      "source": 0,
+      "target": 2
+    }
+  ]
+}
