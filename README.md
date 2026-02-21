@@ -6,22 +6,7 @@
 
 開発中は `dotnet run` を使用してローカル実行できる。
 
-### 1. Program.cs を一部コメントアウトする
-
-`Program.cs` の以下の設定は、ローカル実行では不要なためコメントアウトする。
-
-```csharp
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(5000);
-});
-```
-
-※ `dotnet run` では launchSettings.json の設定が使われるため。
-
----
-
-### 2. アプリを起動する
+### 1. アプリを起動する
 
 ```bash
 dotnet run
@@ -29,7 +14,7 @@ dotnet run
 
 ---
 
-### 3. ブラウザからアクセスする
+### 2. ブラウザからアクセスする
 
 起動時に表示される URL（例）にアクセスする。
 http://localhost:5059
