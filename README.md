@@ -34,7 +34,7 @@ http://localhost:5059
 
 - https://viz-app-cfbsfgc4gwbscygs.japanwest-01.azurewebsites.net
 
-実験ページは以下です。
+実験ページは以下の URL です。被験者番号は適当な半角の数字を入力して下さい。（現在実験を行っていないため、数字は何でも大丈夫です）
 
 - https://viz-app-cfbsfgc4gwbscygs.japanwest-01.azurewebsites.net/test
 
