@@ -365,3 +365,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 !Logs/jsonl_converter.py
+# Ignore generated/static data files under web root
+wwwroot/data/
