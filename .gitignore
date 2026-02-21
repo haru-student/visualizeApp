@@ -365,5 +365,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 !Logs/jsonl_converter.py
-# Ignore generated/static data files under web root
-wwwroot/data/
+# Ignore only top-level JSON data files under web root
+visualizeApp/wwwroot/data/*.json
