@@ -367,3 +367,7 @@ FodyWeavers.xsd
 !Logs/jsonl_converter.py
 # Ignore only top-level JSON data files under web root
 visualizeApp/wwwroot/data/*.json
+
+# Local environment secrets
+.env
+.env.enc

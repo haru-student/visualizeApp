@@ -6,6 +6,61 @@
 
 開発中は `dotnet run` を使用してローカル実行できる。
 
+### 0. Cosmos DB 接続情報（操作ログ保存用）を設定する
+
+ローカルでも本番でも、操作ログは Cosmos DB に保存される。
+ただし、**キーはリポジトリに含めず**、以下の順で読み込む。
+
+1. `.env`（ローカル平文。Git 管理外）
+2. OS 環境変数 (`COSMOS_ENDPOINT` / `COSMOS_KEY`)
+3. 設定値 `Cosmos:Endpoint` / `Cosmos:Key`（User Secrets 含む）
+
+#### .env の作成
+
+```bash
+cp .env.example .env
+```
+
+`.env` に以下を設定する。
+
+```dotenv
+COSMOS_ENDPOINT=https://<your-account>.documents.azure.com:443/
+COSMOS_KEY=<your-cosmos-key>
+```
+
+#### （推奨）.env を暗号化して .env.enc を使う
+
+`.env.enc` を作成する例（OpenSSL）:
+
+```bash
+openssl enc -aes-256-cbc -pbkdf2 -salt -in .env -out .env.enc -a
+```
+
+`make decrypt-env` で復号し、`.env` を生成してから起動する。
+
+```bash
+export ENV_FILE_PASSPHRASE='<opensslで使用したパスフレーズ>'
+make decrypt-env
+dotnet run
+```
+
+`make run` を使うと、復号 (`decrypt-env`) 後に `dotnet run` を実行できる。
+
+```bash
+export ENV_FILE_PASSPHRASE='<opensslで使用したパスフレーズ>'
+make run
+```
+
+#### User Secrets を使う場合
+
+```bash
+dotnet user-secrets init --project visualizeApp/visualizeApp.csproj
+dotnet user-secrets set "Cosmos:Endpoint" "https://<your-account>.documents.azure.com:443/" --project visualizeApp/visualizeApp.csproj
+dotnet user-secrets set "Cosmos:Key" "<your-cosmos-key>" --project visualizeApp/visualizeApp.csproj
+```
+
+Azure 本番環境では App Service の「環境変数（Application Settings）」に `COSMOS_ENDPOINT` / `COSMOS_KEY` を設定する。
+
 ### 1. アプリを起動する
 
 ```bash
@@ -26,7 +81,7 @@ http://localhost:5059
 ### 補足
 
 - この方法は **開発・デバッグ用**
-- DB には接続していないため、操作ログは保存されない
+- Cosmos DB 接続情報が正しく設定されていれば、ローカルでも操作ログが保存される
 
 ## 公開中の確認用URL
 
