@@ -42,7 +42,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
     };
     connects.unshift(tmpLink);
     deepestY.push(y + height);
-    let width = decideWidth(nodes[0], minWidth);
+    let width = decideWidth(nodes[0].Label, minWidth) * 0.7;
     saveCordinates(nodes[0], x, y, width, height);
   } else if(nodes[0].Type === "loop"){
     drawNode(x, y, minWidth, 120, nodes[0]);
@@ -139,13 +139,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
           connects.unshift(connect);
         } else {
           nodes[target.Id].drawn = false;
-          let deepest = 0;
-          for (let i = target.Depth + 1; i < deepestY.length; i++) {
-            if (deepest < deepestY[i]) {
-              deepest = deepestY[i];
-            }
-          }
-          let ifHeight = deepest - target.y + lenLink / 2;
+          let ifHeight = calculateIfHeight(target, deepestY, lenLink, height);
           let width = decideWidth(target.Label, minWidth) * 0.7;
           drawIfNode(target.x, target.y, width, ifHeight, target);
           saveCordinates(target, target.x, target.y, width, ifHeight);
@@ -179,13 +173,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
           connects.unshift(connect);
         } else {
           nodes[target.Id].drawn = false;
-          let deepest = 0;
-          for (let i = target.Depth + 1; i < deepestY.length; i++) {
-            if (deepest < deepestY[i]) {
-              deepest = deepestY[i];
-            }
-          }
-          let ifHeight = deepest - target.y + lenLink / 2;
+          let ifHeight = calculateIfHeight(target, deepestY, lenLink, height);
           let width = decideWidth(target.Label, minWidth) * 0.7;
           drawIfNode(target.x, target.y, width, ifHeight, target);
           saveCordinates(target, target.x, target.y, width, ifHeight);
@@ -234,13 +222,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
           connects.unshift(connect);
         } else {
           nodes[target.Id].drawn = false;
-          let deepest = 0;
-          for (let i = target.Depth + 1; i < deepestY.length; i++) {
-            if (deepest < deepestY[i]) {
-              deepest = deepestY[i];
-            }
-          }
-          let ifHeight = deepest - target.y + lenLink / 2;
+          let ifHeight = calculateIfHeight(target, deepestY, lenLink, height);
           let width = decideWidth(target.Label, minWidth) * 0.7;
           drawIfNode(target.x, target.y, width, ifHeight, target);
           saveCordinates(target, target.x, target.y, width, ifHeight);
@@ -263,13 +245,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
           connects.unshift(connect);
         } else {
           nodes[target.Id].drawn = false;
-          let deepest = 0;
-          for (let i = target.Depth + 1; i < deepestY.length; i++) {
-            if (deepest < deepestY[i]) {
-              deepest = deepestY[i];
-            }
-          }
-          let ifHeight = deepest - target.y + lenLink / 2;
+          let ifHeight = calculateIfHeight(target, deepestY, lenLink, height);
           let width = decideWidth(target.Label, minWidth) * 0.7;
           drawIfNode(target.x, target.y, width, ifHeight, target);
           saveCordinates(target, target.x, target.y, width, ifHeight);
@@ -487,6 +463,21 @@ function drawIfNode(x, y, width, height, node) {
     nodes[target.Id].y = y;
     nodes[target.Id].width = width;
     nodes[target.Id].height = height;
+  }
+
+  function calculateIfHeight(target, deepestY, lenLink, minHeight) {
+    let deepest = 0;
+    for (let i = target.Depth + 1; i < deepestY.length; i++) {
+      if (deepest < deepestY[i]) {
+        deepest = deepestY[i];
+      }
+    }
+
+    if (deepest === 0) {
+      return minHeight;
+    }
+
+    return Math.max(minHeight, deepest - target.y + lenLink / 2);
   }
 
   function decideWidth(label, minWidth) {
