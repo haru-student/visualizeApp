@@ -3,7 +3,7 @@ using Microsoft.Azure.Cosmos;
 using System.Text;
 
 LoadEnvFileIfExists(
-    Path.Combine(AppContext.BaseDirectory, ".env")
+    Path.Combine(Directory.GetCurrentDirectory(), ".env")
 );
 var builder = WebApplication.CreateBuilder(args);
 
