@@ -1,7 +1,4 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using System.IO;
+﻿using Microsoft.AspNetCore.Mvc;
 using visualizeApp.Models;
 using visualizeApp.Services;
 
@@ -11,11 +8,11 @@ namespace visualizeApp.Controllers
     [Route("[controller]/[action]")]
     public class LogController : Controller
     {
-        private readonly LogRepository _repo;
+        private readonly LoggingService _loggingService;
 
-        public LogController(LogRepository repo)
+        public LogController(LoggingService loggingService)
         {
-            _repo = repo;
+            _loggingService = loggingService;
         }
 
         [HttpPost]
@@ -23,30 +20,17 @@ namespace visualizeApp.Controllers
         {
             try
             {
-                var log = new LogData
-                {
-                    id = Guid.NewGuid().ToString(),
-                    uniqueId = dto.uniqueId,
-                    userId = dto.userId,
-                    testId = dto.testId,
-                    testType = dto.testType,
-                    eventType = dto.eventType,
-                    location = dto.location,
-                    detail = dto.detail,
-                    timestamp = dto.timestamp
-                };
-
-                await _repo.InsertAsync(log);
-
+                await _loggingService.ExecuteAsync(dto);
                 return Ok();
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
-                Console.WriteLine("SaveLogData ERROR");
-                Console.WriteLine(ex.ToString());
-                return StatusCode(500, ex.Message);
+                return Problem(statusCode: 503, title: "Log storage is not configured.", detail: ex.Message);
+            }
+            catch (Exception)
+            {
+                return Problem(statusCode: 500, title: "Failed to save log data.");
             }
         }
-
     }
 }

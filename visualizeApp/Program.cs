@@ -11,12 +11,12 @@ builder.Configuration
     .AddEnvironmentVariables()
     .AddUserSecrets<Program>(optional: true);
 
-// MVC + API 両対応
 builder.Services.AddControllersWithViews();
 builder.Services.AddControllers(); 
 
 builder.Services.AddSingleton<LogRepository>();
 builder.Services.AddSingleton<CodeAnalysis>();
+builder.Services.AddSingleton<LoggingService>();
 
 builder.Services.AddSingleton<CosmosClient>(s =>
 {
@@ -49,10 +49,8 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
 
-// ★ API を有効化（これが無かった）
 app.MapControllers();
 
-// ★ MVC View
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

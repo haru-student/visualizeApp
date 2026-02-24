@@ -1,23 +1,27 @@
-using Microsoft.Azure.Cosmos;
+﻿using Microsoft.Azure.Cosmos;
 
 public class LogRepository
 {
     private readonly Container? _container;
+    private readonly string? _configurationError;
 
     public LogRepository(CosmosClient? client, IConfiguration config)
     {
         if (client == null)
         {
-            Console.WriteLine("⚠ CosmosClient is null. Logging disabled.");
+            _configurationError = "CosmosClient is not configured.";
             return;
         }
 
-        var db = config["Cosmos:Database"];
-        var container = config["Cosmos:Container"];
+        var dbEnv = Environment.GetEnvironmentVariable("COSMOS_DATABASE");
+        var containerEnv = Environment.GetEnvironmentVariable("COSMOS_CONTAINER");
+        var db = string.IsNullOrWhiteSpace(dbEnv) ? config["Cosmos:Database"] : dbEnv;
+        var container = string.IsNullOrWhiteSpace(containerEnv) ? config["Cosmos:Container"] : containerEnv;
 
-        if (string.IsNullOrEmpty(db) || string.IsNullOrEmpty(container))
+        if (string.IsNullOrWhiteSpace(db) || string.IsNullOrWhiteSpace(container))
         {
-            Console.WriteLine("Cosmos Database/Container not configured.");
+            _configurationError =
+                "Cosmos Database/Container is not configured. Set COSMOS_DATABASE and COSMOS_CONTAINER (or Cosmos:Database / Cosmos:Container).";
             return;
         }
 
@@ -28,22 +32,9 @@ public class LogRepository
     {
         if (_container == null)
         {
-            Console.WriteLine("⚠ Insert skipped (Cosmos not available)");
-            return;
+            throw new InvalidOperationException(_configurationError ?? "Cosmos container is not available.");
         }
 
-        try
-        {
-            await _container.CreateItemAsync(
-                log,
-                new PartitionKey(log.testId)
-            );
-        }
-        catch (Exception ex)
-        {
-            // 実験中は落とさない
-            Console.WriteLine("Insert failed");
-            Console.WriteLine(ex.ToString());
-        }
+        await _container.CreateItemAsync(log, new PartitionKey(log.testId));
     }
 }
