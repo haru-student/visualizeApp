@@ -9,14 +9,44 @@
 ### 0. Cosmos DB 接続情報（操作ログ保存用）を設定する
 
 ローカルでも本番でも、操作ログは Cosmos DB に保存される。
-ただし、**キーはリポジトリに含めず**、以下のどちらかで設定する。
+ただし、**キーはリポジトリに含めず**、以下の順で読み込む。
 
-- 優先1: 環境変数
-  - `COSMOS_ENDPOINT`
-  - `COSMOS_KEY`
-- 優先2: 設定値 `Cosmos:Endpoint` / `Cosmos:Key`（ローカルは User Secrets 推奨）
+1. `.env`（ローカル平文。Git 管理外）
+2. `.env.enc` + `ENV_FILE_PASSPHRASE`（暗号化ファイルを復号して読み込み）
+3. OS 環境変数 (`COSMOS_ENDPOINT` / `COSMOS_KEY`)
+4. 設定値 `Cosmos:Endpoint` / `Cosmos:Key`（User Secrets 含む）
 
-ローカルでは User Secrets の利用例:
+#### .env の作成
+
+```bash
+cp .env.example .env
+```
+
+`.env` に以下を設定する。
+
+```dotenv
+COSMOS_ENDPOINT=https://<your-account>.documents.azure.com:443/
+COSMOS_KEY=<your-cosmos-key>
+```
+
+#### （推奨）.env を暗号化して .env.enc を使う
+
+`.env.enc` を作成する例（OpenSSL）:
+
+```bash
+openssl enc -aes-256-cbc -pbkdf2 -salt -in .env -out .env.enc -a
+```
+
+起動時に復号するため、`ENV_FILE_PASSPHRASE` を設定してから実行する。
+
+```bash
+export ENV_FILE_PASSPHRASE='<opensslで使用したパスフレーズ>'
+dotnet run
+```
+
+> 補足: アプリ側は `.env.enc` の復号に対応しており、復号できない場合は警告ログのみ出して起動を継続する。
+
+#### User Secrets を使う場合
 
 ```bash
 dotnet user-secrets init --project visualizeApp/visualizeApp.csproj
