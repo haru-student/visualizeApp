@@ -1,43 +1,36 @@
-using System.Text.Json;
-using visualizeApp.Models;
-using Microsoft.AspNetCore.Hosting;
-using System.IO;
-using System.Text.Encodings.Web;
-using System.Text.Unicode;
+﻿using visualizeApp.Models;
 
 namespace visualizeApp.Services
 {
     public class LoggingService
     {
-        private readonly string _logFilePath;
-        private static readonly object _lock = new();
+        private readonly LogRepository _repo;
 
-        public LoggingService(IWebHostEnvironment env)
+        public LoggingService(LogRepository repo)
         {
-            // プロジェクトのルートに Logs フォルダを作成
-            var logDir = Path.Combine(env.ContentRootPath, "Logs");
-
-            if (!Directory.Exists(logDir))
-            {
-                Directory.CreateDirectory(logDir);
-            }
-
-            // 絶対パス
-            _logFilePath = Path.Combine(logDir, "operation-log.jsonl");
+            _repo = repo;
         }
-        public void appendLogData(LogData data)
+
+        public async Task ExecuteAsync(LogRequestDto data)
         {
-            var options = new JsonSerializerOptions
+            var log = CreateLogEntity(data);
+            await _repo.InsertAsync(log);
+        }
+
+        public LogData CreateLogEntity(LogRequestDto data)
+        {
+            return new LogData
             {
-                WriteIndented = false, 
-                
-                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) 
+                id = Guid.NewGuid().ToString(),
+                uniqueId = data.uniqueId,
+                userId = data.userId,
+                testId = data.testId,
+                testType = data.testType,
+                eventType = data.eventType,
+                location = data.location,
+                detail = data.detail,
+                timestamp = data.timestamp
             };
-            string json = JsonSerializer.Serialize(data, options);
-            lock (_lock)
-            {
-                File.AppendAllText(_logFilePath, json + Environment.NewLine);
-            }
         }
     }
 }
