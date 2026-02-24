@@ -18,9 +18,6 @@
 #### .env の作成
 ```bash
 cd visualizeApp
-```
-
-```bash
 cp .env.example .env
 ```
 
@@ -66,3 +63,9 @@ http://localhost:5059
 - https://viz-app-cfbsfgc4gwbscygs.japanwest-01.azurewebsites.net/test
 
 ※ Azure の無料枠で運用しているため、まれにアクセスできない場合があります。
+
+## ビルド & 発行
+```bash
+dotnet clean
+dotnet publish -c Release
+```
