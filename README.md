@@ -28,37 +28,6 @@ COSMOS_ENDPOINT=https://<your-account>.documents.azure.com:443/
 COSMOS_KEY=<your-cosmos-key>
 ```
 
-#### （推奨）.env を暗号化して .env.enc を使う
-
-`.env.enc` を作成する例（OpenSSL）:
-
-```bash
-openssl enc -aes-256-cbc -pbkdf2 -salt -in .env -out .env.enc -a
-```
-
-`make decrypt-env` で復号し、`.env` を生成してから起動する。
-
-```bash
-export ENV_FILE_PASSPHRASE='<opensslで使用したパスフレーズ>'
-make decrypt-env
-dotnet run
-```
-
-`make run` を使うと、復号 (`decrypt-env`) 後に `dotnet run` を実行できる。
-
-```bash
-export ENV_FILE_PASSPHRASE='<opensslで使用したパスフレーズ>'
-make run
-```
-
-#### User Secrets を使う場合
-
-```bash
-dotnet user-secrets init --project visualizeApp/visualizeApp.csproj
-dotnet user-secrets set "Cosmos:Endpoint" "https://<your-account>.documents.azure.com:443/" --project visualizeApp/visualizeApp.csproj
-dotnet user-secrets set "Cosmos:Key" "<your-cosmos-key>" --project visualizeApp/visualizeApp.csproj
-```
-
 Azure 本番環境では App Service の「環境変数（Application Settings）」に `COSMOS_ENDPOINT` / `COSMOS_KEY` を設定する。
 
 ### 1. アプリを起動する
