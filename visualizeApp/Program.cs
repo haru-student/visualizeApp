@@ -2,9 +2,8 @@ using visualizeApp.Services;
 using Microsoft.Azure.Cosmos;
 using System.Text;
 
-LoadEnvFileIfExists(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
-
 var builder = WebApplication.CreateBuilder(args);
+LoadEnvFileIfExists(Path.Combine(builder.Environment.ContentRootPath, ".env"));
 builder.Configuration
     .AddEnvironmentVariables()
     .AddUserSecrets<Program>(optional: true);
