@@ -1,5 +1,6 @@
 using visualizeApp.Services;
 using Microsoft.Azure.Cosmos;
+using System.Text;
 
 LoadEnvFileIfExists(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
 
@@ -18,10 +19,14 @@ builder.Services.AddSingleton<CodeAnalysis>();
 builder.Services.AddSingleton<CosmosClient>(s =>
 {
     var config = s.GetRequiredService<IConfiguration>();
-    var endpoint = Environment.GetEnvironmentVariable("COSMOS_ENDPOINT")
-        ?? config["Cosmos:Endpoint"];
-    var key = Environment.GetEnvironmentVariable("COSMOS_KEY")
-        ?? config["Cosmos:Key"];
+    var endpointEnv = Environment.GetEnvironmentVariable("COSMOS_ENDPOINT");
+    var keyEnv = Environment.GetEnvironmentVariable("COSMOS_KEY");
+    var endpoint = string.IsNullOrWhiteSpace(endpointEnv)
+        ? config["Cosmos:Endpoint"]
+        : endpointEnv;
+    var key = string.IsNullOrWhiteSpace(keyEnv)
+        ? config["Cosmos:Key"]
+        : keyEnv;
 
     if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(key))
     {
