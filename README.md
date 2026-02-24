@@ -16,6 +16,9 @@
 3. 設定値 `Cosmos:Endpoint` / `Cosmos:Key`（User Secrets 含む）
 
 #### .env の作成
+```bash
+cd visualizeApp
+```
 
 ```bash
 cp .env.example .env
