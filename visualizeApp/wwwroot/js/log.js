@@ -21,7 +21,7 @@ export async function sendLogData(eventType, className = null, methodName = null
 
     const data = createLogEntity(uniqueId, testId, testType, eventType, className, methodName, id,  detail);
     try {
-        await fetch('https://viz-app-cfbsfgc4gwbscygs.japanwest-01.azurewebsites.net/Log/SaveLogData', {
+        await fetch('/Log/SaveLogData', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
