@@ -12,9 +12,8 @@
 ただし、**キーはリポジトリに含めず**、以下の順で読み込む。
 
 1. `.env`（ローカル平文。Git 管理外）
-2. `.env.enc` + `ENV_FILE_PASSPHRASE`（暗号化ファイルを復号して読み込み）
-3. OS 環境変数 (`COSMOS_ENDPOINT` / `COSMOS_KEY`)
-4. 設定値 `Cosmos:Endpoint` / `Cosmos:Key`（User Secrets 含む）
+2. OS 環境変数 (`COSMOS_ENDPOINT` / `COSMOS_KEY`)
+3. 設定値 `Cosmos:Endpoint` / `Cosmos:Key`（User Secrets 含む）
 
 #### .env の作成
 
@@ -37,14 +36,20 @@ COSMOS_KEY=<your-cosmos-key>
 openssl enc -aes-256-cbc -pbkdf2 -salt -in .env -out .env.enc -a
 ```
 
-起動時に復号するため、`ENV_FILE_PASSPHRASE` を設定してから実行する。
+`make decrypt-env` で復号し、`.env` を生成してから起動する。
 
 ```bash
 export ENV_FILE_PASSPHRASE='<opensslで使用したパスフレーズ>'
+make decrypt-env
 dotnet run
 ```
 
-> 補足: アプリ側は `.env.enc` の復号に対応しており、復号できない場合は警告ログのみ出して起動を継続する。
+`make run` を使うと、復号 (`decrypt-env`) 後に `dotnet run` を実行できる。
+
+```bash
+export ENV_FILE_PASSPHRASE='<opensslで使用したパスフレーズ>'
+make run
+```
 
 #### User Secrets を使う場合
 

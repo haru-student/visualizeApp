@@ -1,9 +1,6 @@
-using System.Security.Cryptography;
-using System.Text;
 using visualizeApp.Services;
 using Microsoft.Azure.Cosmos;
 
-LoadEncryptedEnvFileIfConfigured();
 LoadEnvFileIfExists(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,7 +26,7 @@ builder.Services.AddSingleton<CosmosClient>(s =>
     if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(key))
     {
         // 起動は止めない（ログだけ）
-        Console.WriteLine("⚠ Cosmos connection info not set. Set COSMOS_ENDPOINT/COSMOS_KEY via .env/.env.enc, environment variables, or Cosmos:Endpoint/Cosmos:Key (User Secrets).");
+        Console.WriteLine("⚠ Cosmos connection info not set. Set COSMOS_ENDPOINT/COSMOS_KEY via .env, environment variables, or Cosmos:Endpoint/Cosmos:Key (User Secrets).");
         return null!;
     }
 
@@ -85,76 +82,4 @@ static void LoadEnvFileIfExists(string filePath)
             Environment.SetEnvironmentVariable(key, value);
         }
     }
-}
-
-static void LoadEncryptedEnvFileIfConfigured()
-{
-    var encryptedPath = Path.Combine(Directory.GetCurrentDirectory(), ".env.enc");
-    var passphrase = Environment.GetEnvironmentVariable("ENV_FILE_PASSPHRASE");
-
-    if (!File.Exists(encryptedPath) || string.IsNullOrWhiteSpace(passphrase))
-    {
-        return;
-    }
-
-    try
-    {
-        var payload = Convert.FromBase64String(File.ReadAllText(encryptedPath, Encoding.UTF8));
-        var plaintext = DecryptEnvPayload(payload, passphrase);
-
-        foreach (var line in plaintext.Split('\n'))
-        {
-            var trimmed = line.Trim();
-            if (string.IsNullOrWhiteSpace(trimmed) || trimmed.StartsWith('#'))
-            {
-                continue;
-            }
-
-            var separator = trimmed.IndexOf('=');
-            if (separator <= 0)
-            {
-                continue;
-            }
-
-            var key = trimmed[..separator].Trim();
-            var value = trimmed[(separator + 1)..].Trim().Trim('"');
-
-            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(key)))
-            {
-                Environment.SetEnvironmentVariable(key, value);
-            }
-        }
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"⚠ .env.enc could not be decrypted: {ex.Message}");
-    }
-}
-
-static string DecryptEnvPayload(byte[] payload, string passphrase)
-{
-    var opensslPrefix = Encoding.ASCII.GetBytes("Salted__");
-
-    if (payload.Length <= 16 || !payload.Take(8).SequenceEqual(opensslPrefix))
-    {
-        throw new InvalidOperationException("Expected OpenSSL salted payload.");
-    }
-
-    var salt = payload[8..16];
-    var cipher = payload[16..];
-
-    using var kdf = new Rfc2898DeriveBytes(passphrase, salt, 10_000, HashAlgorithmName.SHA256);
-    var keyIv = kdf.GetBytes(48);
-    var key = keyIv[..32];
-    var iv = keyIv[32..48];
-
-    using var aes = Aes.Create();
-    aes.Key = key;
-    aes.IV = iv;
-    aes.Mode = CipherMode.CBC;
-    aes.Padding = PaddingMode.PKCS7;
-
-    using var decryptor = aes.CreateDecryptor();
-    var plaintextBytes = decryptor.TransformFinalBlock(cipher, 0, cipher.Length);
-    return Encoding.UTF8.GetString(plaintextBytes);
 }
