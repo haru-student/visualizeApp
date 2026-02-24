@@ -2,7 +2,9 @@ using visualizeApp.Services;
 using Microsoft.Azure.Cosmos;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddEnvironmentVariables();
+builder.Configuration
+    .AddEnvironmentVariables()
+    .AddUserSecrets<Program>(optional: true);
 
 // MVC + API 両対応
 builder.Services.AddControllersWithViews();
@@ -13,13 +15,16 @@ builder.Services.AddSingleton<CodeAnalysis>();
 
 builder.Services.AddSingleton<CosmosClient>(s =>
 {
-    var endpoint = Environment.GetEnvironmentVariable("COSMOS_ENDPOINT");
-    var key = Environment.GetEnvironmentVariable("COSMOS_KEY");
+    var config = s.GetRequiredService<IConfiguration>();
+    var endpoint = Environment.GetEnvironmentVariable("COSMOS_ENDPOINT")
+        ?? config["Cosmos:Endpoint"];
+    var key = Environment.GetEnvironmentVariable("COSMOS_KEY")
+        ?? config["Cosmos:Key"];
 
     if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(key))
     {
         // 起動は止めない（ログだけ）
-        Console.WriteLine("⚠ Cosmos env not set");
+        Console.WriteLine("⚠ Cosmos connection info not set. Set COSMOS_ENDPOINT/COSMOS_KEY or Cosmos:Endpoint/Cosmos:Key (User Secrets). ");
         return null!;
     }
 
