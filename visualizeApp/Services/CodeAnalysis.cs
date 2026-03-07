@@ -108,6 +108,9 @@ namespace visualizeApp.Services
                     Label = n.Label,
                     Class = n.Class,
                     Method = n.Method,
+                    CalledClass = n.CalledClass,
+                    CalledMethod = n.CalledMethod,
+                    Arguments = n.Arguments,
                     Depth = n.Depth,
                     LineNumber = n.LineNumber
                 }).ToList(),
@@ -198,7 +201,7 @@ namespace visualizeApp.Services
 
                             string argumentText = GetArgumentText(invocation);
 
-                            jsonHandler.addNode(id, "methodCall", invocation.ToString() + "/,,,/" + calledClass + "." + calledMethod, depth, currentClassName, currentMethodName, lineNumber);
+                            jsonHandler.addNode(id, "methodCall", invocation.ToString(), depth, currentClassName, currentMethodName, lineNumber, calledClass, calledMethod, argumentText);
                             CreateLink("expression"); // ← この関数はstaticなので、直接呼び出し
                             SaveCondition("expression"); // ← この関数はstaticなので、直接呼び出し
                             linkCallGraph.Add((currentClassName + "." + currentMethodName, calledClass + "." + calledMethod));
@@ -237,11 +240,14 @@ namespace visualizeApp.Services
                             jsonHandler.addNode(
                                 id,
                                 "methodCall",
-                                localDeclStmt.ToString() + "/,,,/" + calledClass + "." + calledMethod,
+                                localDeclStmt.ToString(),
                                 depth,
                                 currentClassName,
                                 currentMethodName,
-                                lineNumber
+                                lineNumber,
+                                calledClass,
+                                calledMethod,
+                                GetArgumentText(invocation)
                             );
 
                             CreateLink("expression");

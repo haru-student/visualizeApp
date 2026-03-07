@@ -364,21 +364,18 @@ async function drawArgNode(target, args) {
   let idCount = 1000; // メモのための一時的なid。要検討
   nodes.forEach(n => {
     let clickTimeout = null;
-    let c_m = n.Label;
     let text = "";
-    if (n.Label.indexOf("/,,,/") !== -1) {
-      c_m = n.Label.split("/,,,/")[1];
-    }
-    if (target.label.split('.')[0] !== c_m.split('.')[0] || target.label.split('.')[1] !== c_m.split('.')[1]) {
+    const calledClass = n.CalledClass ?? n.calledClass;
+    const calledMethod = n.CalledMethod ?? n.calledMethod;
+
+    if (target.label.split('.')[0] !== calledClass || target.label.split('.')[1] !== calledMethod) {
       return;
     }
-    let arg = n.Label
-      .split("/,,,/")[0]
-      .split("(")[1]
-      .replace(/[)\s;]+$/g, "");
-    let argList = arg.split(',');
+
+    const argText = n.Arguments ?? n.arguments ?? "";
+    const argList = argText.length > 0 ? argText.split(',') : [];
     for (let i = 0; i < args.length; i++) {
-      text += `${args[i]} = ${argList[i]}\n`;
+      text += `${args[i]} = ${argList[i] ?? ""}\n`;
     }
     // ===== rect + text で引数ノードを描画 =====
 

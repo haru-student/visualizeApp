@@ -63,14 +63,13 @@ export function drawPAD(data, posX = 0, posY = 0) {
     deepestY.push(y + height);
   }
   if(nodes[0].Type == "methodCall"){
-    let c_m = nodes[0].Label;
-    if (nodes[0].Label.indexOf("/,,,/") !== -1) {
-      c_m = nodes[0].Label.split("/,,,/")[1];
+    const calledClass = nodes[0].CalledClass ?? nodes[0].calledClass;
+    const calledMethod = nodes[0].CalledMethod ?? nodes[0].calledMethod;
+    const arg = nodes[0].Arguments ?? nodes[0].arguments ?? "";
+
+    if (calledClass && calledMethod) {
+      drawMethodCallLink(`${calledClass}.${calledMethod}`, arg, nodes[0].x + nodes[0].width, nodes[0].y);
     }
-    c_m = c_m.split('(')[0];
-    let arg = "";
-    arg = nodes[0].Label.split('(')[1].replace(/\)$/, "");
-    drawMethodCallLink(c_m, arg, nodes[0].x + nodes[0].width, nodes[0].y);
   }
   let filteredLinks = links.filter((link) => link.Node1 === nodes[0].Id);
   if (nodes[0].Type == "if" || nodes[0].Type == "else if") {
@@ -274,22 +273,13 @@ export function drawPAD(data, posX = 0, posY = 0) {
     deepestY[target.Depth] = target.y + target.height;
     drawLink(source, target, connect);
     if(target.Type == "methodCall"){
-      let c_m = target.Label;
-      let arg = target.Label;
-      if (target.Label.indexOf("/,,,/") !== -1) {
-        c_m = target.Label.split("/,,,/")[1];
-        arg = arg.split("/,,,/")[0];
-      }
-      arg = arg.split('(')[1];
-      if (arg.indexOf(";") !== -1) {
-        arg = arg.replace(/;/g, "");
-      }
-      if (arg.indexOf(")") !== -1) {
-        arg = arg.replace(/\)$/, "");
-      }
-      c_m = c_m.split('(')[0];
+      const calledClass = target.CalledClass ?? target.calledClass;
+      const calledMethod = target.CalledMethod ?? target.calledMethod;
+      const arg = target.Arguments ?? target.arguments ?? "";
 
-      drawMethodCallLink(c_m, arg, target.x + target.width, target.y);
+      if (calledClass && calledMethod) {
+        drawMethodCallLink(`${calledClass}.${calledMethod}`, arg, target.x + target.width, target.y);
+      }
     }
     connects.shift();
     let filteredLinks = links.filter((link) => link.Node1 === target.Id);
@@ -352,16 +342,12 @@ function drawNode(x, y, width, height, node) {
         .text(line);
 });
   } else if (node.Type === 'methodCall') {
-    let methodLabel = node.Label;
-    if (node.Label.indexOf("/,,,/") !== -1) {
-      methodLabel = node.Label.split("/,,,/")[0];
-    }
       g.append("text")
         .attr("x", x + width / 2)
         .attr("y", y + height / 2)
         .attr("text-anchor", "middle")
         .attr("dy", ".35em")
-        .text(methodLabel);
+        .text(node.Label);
   }
   else {
     g.append("text")

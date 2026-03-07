@@ -5,6 +5,9 @@
     public required string Label { get; set; }
     public string? Class { get; set; }
     public string? Method { get; set; }
+    public string? CalledClass { get; set; }
+    public string? CalledMethod { get; set; }
+    public string? Arguments { get; set; }
     public required int Depth { get; set; }
     public int LineNumber { get; set; }
 }
