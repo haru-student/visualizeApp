@@ -26,7 +26,7 @@ namespace visualizeApp.Services
         public PadDiagram? CurrentPadDiagram { get; private set; }
         public CallGraphData? CurrentCallGraph { get; private set; }
 
-        public void addNode(int id, string type, string label, int depth, string className, string methodName, int lineNumber)
+        public void addNode(int id, string type, string label, int depth, string className, string methodName, int lineNumber, string? calledClass = null, string? calledMethod = null, string? arguments = null)
         {
             var node = new Node
             {
@@ -36,6 +36,9 @@ namespace visualizeApp.Services
                 Depth = depth,
                 Class = className,
                 Method = methodName,
+                CalledClass = calledClass,
+                CalledMethod = calledMethod,
+                Arguments = arguments,
                 LineNumber = lineNumber
             };
             Nodes.Add(node);
@@ -66,6 +69,9 @@ namespace visualizeApp.Services
                     Depth = n.Depth,
                     Class = n.Class,
                     Method = n.Method,
+                    CalledClass = n.CalledClass,
+                    CalledMethod = n.CalledMethod,
+                    Arguments = n.Arguments,
                     LineNumber = n.LineNumber
                 }).ToList(),
                 Links = Links.Select(l => new Link
