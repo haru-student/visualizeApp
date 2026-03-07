@@ -17,6 +17,7 @@ builder.Services.AddControllers();
 builder.Services.AddSingleton<LogRepository>();
 builder.Services.AddSingleton<CodeAnalysis>();
 builder.Services.AddSingleton<LoggingService>();
+builder.Services.AddSingleton<VisualizationResultStore>();
 
 builder.Services.AddSingleton<CosmosClient>(s =>
 {

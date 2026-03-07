@@ -1,6 +1,6 @@
 ﻿import { sendLogData } from "./log.js";
 import { initMemoModule } from "./memo.js";
-import { updateCallGraph } from "./visualize.js";
+import { setCurrentResultId, updateCallGraph } from "./visualize.js";
 
 // monaco editorの設定
 function initMonaco() {
@@ -71,6 +71,9 @@ function initMonaco() {
                         console.error("サーバーからの応答が不正です");
                         return;
                     }
+
+                    const payload = await response.json();
+                    setCurrentResultId(payload?.resultId ?? "");
                     updateCallGraph();
                     // 開始のログ送信
                     sendLogData('start', null, null, null, null);

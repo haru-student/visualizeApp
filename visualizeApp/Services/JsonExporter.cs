@@ -58,8 +58,24 @@ namespace visualizeApp.Services
         {
             CurrentPadDiagram = new PadDiagram
             {
-                Nodes = Nodes,
-                Links = Links
+                Nodes = Nodes.Select(n => new Node
+                {
+                    Id = n.Id,
+                    Type = n.Type,
+                    Label = n.Label,
+                    Depth = n.Depth,
+                    Class = n.Class,
+                    Method = n.Method,
+                    LineNumber = n.LineNumber
+                }).ToList(),
+                Links = Links.Select(l => new Link
+                {
+                    Node1 = l.Node1,
+                    Node2 = l.Node2,
+                    Type = l.Type,
+                    Class = l.Class,
+                    Method = l.Method
+                }).ToList()
             };
 
             Nodes.Clear();

@@ -2,9 +2,22 @@ import { drawCallGraph, registerPadModuleForScreen } from "./callGraph.js";
 import { drawPAD } from "./pad.js";
 
 let callGraphData = "";
-// padDiagram.json の存在チェックと可視化
+let currentResultId = "";
+
+export function setCurrentResultId(resultId) {
+    currentResultId = resultId ?? "";
+}
+
+// callGraph の取得と可視化
 export function updateCallGraph() {
-    fetch("/api/visualize/call-graph", { cache: "no-store" })
+    if (!currentResultId) {
+        document.getElementById("uploadSection").style.display = "block";
+        document.getElementById("visualSection").style.display = "none";
+        document.getElementById('legend').classList.add('d-none');
+        return;
+    }
+
+    fetch(`/api/visualize/call-graph?resultId=${encodeURIComponent(currentResultId)}`, { cache: "no-store" })
         .then(res => {
             if (!res.ok) throw new Error();
             return res.json();
@@ -22,13 +35,13 @@ export function updateCallGraph() {
                     callGraphData = newData;
                 }
                 else {
-                    if(data.nodes.length > 1 && window.displayedMethods != null){
+                    if (data.nodes.length > 1 && window.displayedMethods != null) {
                         getPadData(100, 200);
                     }
-                    else if(data.nodes.length === 1 && window.displayedMethods != null){
+                    else if (data.nodes.length === 1 && window.displayedMethods != null) {
                         getPadData(50, 30);
                     }
-                    else if(data.nodes.length === 0){
+                    else if (data.nodes.length === 0) {
                         document.getElementById("uploadSection").style.display = "block";
                         document.getElementById("visualSection").style.display = "none";
                         document.getElementById('legend').classList.add('d-none');
@@ -36,7 +49,7 @@ export function updateCallGraph() {
                 }
             }
             else {
-                 document.getElementById("uploadSection").style.display = "block";
+                document.getElementById("uploadSection").style.display = "block";
                 document.getElementById("visualSection").style.display = "none";
                 document.getElementById('legend').classList.add('d-none');
             }
@@ -52,17 +65,16 @@ export function updateCallGraph() {
 // PADで標示しているメソッド
 window.displayedMethods = null;
 window.displayedPAD = "";
+
 // jsonから必要なPADデータの取得
 export function getPadData(posX, posY) {
-    const svg = d3.select("#pad-layer");
-
-    if (window.displayedMethods == null) {
+    if (window.displayedMethods == null || !currentResultId) {
         d3.select("#pad-layer").selectAll("*").remove();
         window.displayedPAD = "";
         return;
     }
 
-    fetch("/api/visualize/pad-diagram", { cache: "no-store" })
+    fetch(`/api/visualize/pad-diagram?resultId=${encodeURIComponent(currentResultId)}`, { cache: "no-store" })
         .then(res => {
             if (!res.ok) throw new Error();
             return res.json();
@@ -89,7 +101,11 @@ export function getPadData(posX, posY) {
 }
 
 export function getMethodCallNode() {
-    return fetch("/api/visualize/pad-diagram", { cache: "no-store" })
+    if (!currentResultId) {
+        return Promise.resolve([]);
+    }
+
+    return fetch(`/api/visualize/pad-diagram?resultId=${encodeURIComponent(currentResultId)}`, { cache: "no-store" })
         .then(res => {
             if (!res.ok) throw new Error();
             return res.json();

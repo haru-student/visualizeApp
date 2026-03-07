@@ -12,17 +12,19 @@ namespace visualizeApp.Controllers
     public class HomeController : Controller
     {
         private readonly CodeAnalysis _roslyn;
+        private readonly VisualizationResultStore _resultStore;
 
-        public HomeController(CodeAnalysis roslyn)
+        public HomeController(CodeAnalysis roslyn, VisualizationResultStore resultStore)
         {
             _roslyn = roslyn;
+            _resultStore = resultStore;
         }
 
         public IActionResult Index()
         {
-            _roslyn.ClearCurrentData();
             return View();
         }
+
         public IActionResult Test()
         {
             return View();
@@ -33,7 +35,7 @@ namespace visualizeApp.Controllers
         {
             if (csFile == null || csFile.Length == 0)
             {
-                return Content("");
+                return Json(new { resultId = string.Empty });
             }
 
             string fileContent;
@@ -42,28 +44,30 @@ namespace visualizeApp.Controllers
                 fileContent = await reader.ReadToEndAsync();
             }
 
-            _roslyn.Entry(fileContent);
+            var snapshot = _roslyn.AnalyzeSnapshot(fileContent);
+            var resultId = _resultStore.Save(snapshot.PadDiagram, snapshot.CallGraph);
 
-            return Content("");
+            return Json(new { resultId });
         }
 
         [HttpGet("api/visualize/call-graph")]
-        public IActionResult GetCallGraph()
+        public IActionResult GetCallGraph([FromQuery] string resultId)
         {
-            if (_roslyn.CurrentCallGraph == null)
+            var result = _resultStore.Get(resultId);
+            if (result?.CallGraph == null)
             {
                 return Json(null);
             }
 
             var response = new
             {
-                nodes = _roslyn.CurrentCallGraph.Nodes.Select(x => new
+                nodes = result.CallGraph.Nodes.Select(x => new
                 {
                     id = x.Id,
                     label = x.Label,
                     parameters = x.Parameters
                 }),
-                links = _roslyn.CurrentCallGraph.Links.Select(x => new
+                links = result.CallGraph.Links.Select(x => new
                 {
                     source = x.Source,
                     target = x.Target
@@ -77,15 +81,16 @@ namespace visualizeApp.Controllers
         }
 
         [HttpGet("api/visualize/pad-diagram")]
-        public IActionResult GetPadDiagram()
+        public IActionResult GetPadDiagram([FromQuery] string resultId)
         {
-            if (_roslyn.CurrentPadDiagram == null)
+            var result = _resultStore.Get(resultId);
+            if (result?.PadDiagram == null)
             {
                 return Json(null);
             }
 
             return Content(
-                JsonConvert.SerializeObject(_roslyn.CurrentPadDiagram),
+                JsonConvert.SerializeObject(result.PadDiagram),
                 Encoding.UTF8,
                 "application/json");
         }
