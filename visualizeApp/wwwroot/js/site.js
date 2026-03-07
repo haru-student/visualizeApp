@@ -92,6 +92,7 @@ function initMonaco() {
                         document.getElementById("uploadSection").style.display = "block";
                         document.getElementById("visualSection").style.display = "none";
                         document.getElementById('legend').classList.add('d-none');
+                        sampleButton.disabled = false;
                         return;
                     }
                     const blob = new Blob([editedCode], { type: "text/plain" });
