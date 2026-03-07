@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.IO;
@@ -31,11 +32,12 @@ namespace visualizeApp.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> ProcessFile(IFormFile csFile)
         {
             if (csFile == null || csFile.Length == 0)
             {
-                return Json(new { resultId = string.Empty });
+                return Json(new { success = false });
             }
 
             string fileContent;
@@ -46,14 +48,16 @@ namespace visualizeApp.Controllers
 
             var snapshot = _roslyn.AnalyzeSnapshot(fileContent);
             var resultId = _resultStore.Save(snapshot.PadDiagram, snapshot.CallGraph);
+            HttpContext.Session.SetString("VisualizationResultId", resultId);
 
-            return Json(new { resultId });
+            return Json(new { success = true });
         }
 
         [HttpGet("api/visualize/call-graph")]
-        public IActionResult GetCallGraph([FromQuery] string resultId)
+        public IActionResult GetCallGraph()
         {
-            var result = _resultStore.Get(resultId);
+            var resultId = HttpContext.Session.GetString("VisualizationResultId");
+            var result = _resultStore.Get(resultId ?? string.Empty);
             if (result?.CallGraph == null)
             {
                 return Json(null);
@@ -81,9 +85,10 @@ namespace visualizeApp.Controllers
         }
 
         [HttpGet("api/visualize/pad-diagram")]
-        public IActionResult GetPadDiagram([FromQuery] string resultId)
+        public IActionResult GetPadDiagram()
         {
-            var result = _resultStore.Get(resultId);
+            var resultId = HttpContext.Session.GetString("VisualizationResultId");
+            var result = _resultStore.Get(resultId ?? string.Empty);
             if (result?.PadDiagram == null)
             {
                 return Json(null);
