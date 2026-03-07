@@ -215,9 +215,10 @@ function openPadForNode(d) {
     window.currentSimulation.stop();
   }, 1200);
   
-  const args = d.parameters
+  const args = (d.parameters ?? "")
     .split(",")
-    .map(p => p.trim());
+    .map(p => p.trim())
+    .filter(p => p.length > 0);
   drawArgNode(d, args);
 
   // PADを表示ログ
@@ -365,15 +366,13 @@ async function drawArgNode(target, args) {
   nodes.forEach(n => {
     let clickTimeout = null;
     let text = "";
-    const calledClass = n.CalledClass ?? n.calledClass;
-    const calledMethod = n.CalledMethod ?? n.calledMethod;
+    const { calledClass, calledMethod, argumentsText } = parseMethodCallNode(n);
 
     if (target.label.split('.')[0] !== calledClass || target.label.split('.')[1] !== calledMethod) {
       return;
     }
 
-    const argText = n.Arguments ?? n.arguments ?? "";
-    const argList = argText.length > 0 ? argText.split(',') : [];
+    const argList = argumentsText.length > 0 ? argumentsText.split(',').map(a => a.trim()) : [];
     for (let i = 0; i < args.length; i++) {
       text += `${args[i]} = ${argList[i] ?? ""}\n`;
     }
@@ -439,7 +438,7 @@ async function drawArgNode(target, args) {
     });
 
     // text のサイズを取得
-    const bbox = argText.node().getBBox();
+    const bbox = argTexts.node().getBBox();
     const padding = 6;
 
     // rect（背景）
@@ -484,6 +483,39 @@ async function drawArgNode(target, args) {
     );
     idCount++;
   });
+}
+
+function parseMethodCallNode(node) {
+  const calledClass = node.CalledClass ?? node.calledClass;
+  const calledMethod = node.CalledMethod ?? node.calledMethod;
+  const argumentsText = (node.Arguments ?? node.arguments ?? "").trim();
+
+  if (calledClass && calledMethod) {
+    return { calledClass, calledMethod, argumentsText };
+  }
+
+  const label = (node.Label ?? node.label ?? "").toString();
+  const [callExpr, destination] = label.split("/,,,/");
+  let parsedClass = "";
+  let parsedMethod = "";
+  if (destination) {
+    const parts = destination.trim().split(".");
+    parsedClass = parts[0] ?? "";
+    parsedMethod = parts[1] ?? "";
+  }
+
+  let parsedArgs = "";
+  const leftParen = callExpr?.lastIndexOf("(") ?? -1;
+  const rightParen = callExpr?.lastIndexOf(")") ?? -1;
+  if (leftParen >= 0 && rightParen > leftParen) {
+    parsedArgs = callExpr.slice(leftParen + 1, rightParen).trim();
+  }
+
+  return {
+    calledClass: parsedClass,
+    calledMethod: parsedMethod,
+    argumentsText: parsedArgs
+  };
 }
 function clearArgNodes() {
   d3.select("#graph-layer")

@@ -25,11 +25,11 @@ namespace visualizeApp.Services
         // MetadataReferenceのリストは一度だけ作成すれば良い
         private List<MetadataReference> references = new List<MetadataReference>
         {
-            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),        // mscorlib
-            MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),       // System.Console
-            MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),    // System.Linq
-            MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),        // System.Collections.Generic
-            MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location) // System.Runtime
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),    
+            MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),      
+            MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),   
+            MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),        
+            MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location)
         };
 
 

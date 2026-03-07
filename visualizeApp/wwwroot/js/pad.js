@@ -63,9 +63,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
     deepestY.push(y + height);
   }
   if(nodes[0].Type == "methodCall"){
-    const calledClass = nodes[0].CalledClass ?? nodes[0].calledClass;
-    const calledMethod = nodes[0].CalledMethod ?? nodes[0].calledMethod;
-    const arg = nodes[0].Arguments ?? nodes[0].arguments ?? "";
+    const { calledClass, calledMethod, argumentsText: arg } = parseMethodCallNode(nodes[0]);
 
     if (calledClass && calledMethod) {
       drawMethodCallLink(`${calledClass}.${calledMethod}`, arg, nodes[0].x + nodes[0].width, nodes[0].y);
@@ -273,9 +271,7 @@ export function drawPAD(data, posX = 0, posY = 0) {
     deepestY[target.Depth] = target.y + target.height;
     drawLink(source, target, connect);
     if(target.Type == "methodCall"){
-      const calledClass = target.CalledClass ?? target.calledClass;
-      const calledMethod = target.CalledMethod ?? target.calledMethod;
-      const arg = target.Arguments ?? target.arguments ?? "";
+      const { calledClass, calledMethod, argumentsText: arg } = parseMethodCallNode(target);
 
       if (calledClass && calledMethod) {
         drawMethodCallLink(`${calledClass}.${calledMethod}`, arg, target.x + target.width, target.y);
@@ -489,4 +485,37 @@ function drawIfNode(x, y, width, height, node) {
     tempText.remove();
     return Math.max(minWidth, width);
   }
+}
+
+function parseMethodCallNode(node) {
+  const calledClass = node.CalledClass ?? node.calledClass;
+  const calledMethod = node.CalledMethod ?? node.calledMethod;
+  const argumentsText = (node.Arguments ?? node.arguments ?? "").trim();
+
+  if (calledClass && calledMethod) {
+    return { calledClass, calledMethod, argumentsText };
+  }
+
+  const label = (node.Label ?? node.label ?? "").toString();
+  const [callExpr, destination] = label.split("/,,,/");
+  let parsedClass = "";
+  let parsedMethod = "";
+  if (destination) {
+    const parts = destination.trim().split(".");
+    parsedClass = parts[0] ?? "";
+    parsedMethod = parts[1] ?? "";
+  }
+
+  let parsedArgs = "";
+  const leftParen = callExpr?.lastIndexOf("(") ?? -1;
+  const rightParen = callExpr?.lastIndexOf(")") ?? -1;
+  if (leftParen >= 0 && rightParen > leftParen) {
+    parsedArgs = callExpr.slice(leftParen + 1, rightParen).trim();
+  }
+
+  return {
+    calledClass: parsedClass,
+    calledMethod: parsedMethod,
+    argumentsText: parsedArgs
+  };
 }
