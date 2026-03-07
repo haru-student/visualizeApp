@@ -80,8 +80,8 @@ namespace visualizeApp.Controllers
 
             return Content(
                 System.Text.Json.JsonSerializer.Serialize(response),
-                Encoding.UTF8,
-                "application/json");
+                "application/json",
+                Encoding.UTF8);
         }
 
         [HttpGet("api/visualize/pad-diagram")]
@@ -96,8 +96,8 @@ namespace visualizeApp.Controllers
 
             return Content(
                 JsonConvert.SerializeObject(result.PadDiagram),
-                Encoding.UTF8,
-                "application/json");
+                "application/json",
+                Encoding.UTF8);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
