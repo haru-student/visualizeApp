@@ -18,6 +18,9 @@ namespace visualizeApp.Services
         private static JsonExporter jsonHandler = new JsonExporter();
         static bool isElse = false;
 
+        public PadDiagram? CurrentPadDiagram => jsonHandler.CurrentPadDiagram;
+        public CallGraphData? CurrentCallGraph => jsonHandler.CurrentCallGraph;
+
         // MetadataReferenceのリストは一度だけ作成すれば良い
         private List<MetadataReference> references = new List<MetadataReference>
         {
@@ -69,6 +72,11 @@ namespace visualizeApp.Services
             }
             jsonHandler.SaveCallGraph(methodList, linkCallGraph);
             jsonHandler.saveFile();
+        }
+
+        public void ClearCurrentData()
+        {
+            jsonHandler.ClearCurrentData();
         }
 
         static void AnalyzeClass(ClassDeclarationSyntax classDecl, SemanticModel semanticModel) // semanticModelを引数に追加

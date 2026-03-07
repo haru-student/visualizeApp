@@ -4,7 +4,7 @@ import { drawPAD } from "./pad.js";
 let callGraphData = "";
 // padDiagram.json の存在チェックと可視化
 export function updateCallGraph() {
-    fetch("/data/callGraph.json", { cache: "no-store" })
+    fetch("/api/visualize/call-graph", { cache: "no-store" })
         .then(res => {
             if (!res.ok) throw new Error();
             return res.json();
@@ -62,7 +62,7 @@ export function getPadData(posX, posY) {
         return;
     }
 
-    fetch("/data/padDiagram.json", { cache: "no-store" })
+    fetch("/api/visualize/pad-diagram", { cache: "no-store" })
         .then(res => {
             if (!res.ok) throw new Error();
             return res.json();
@@ -89,7 +89,7 @@ export function getPadData(posX, posY) {
 }
 
 export function getMethodCallNode() {
-    return fetch("/data/padDiagram.json", { cache: "no-store" })
+    return fetch("/api/visualize/pad-diagram", { cache: "no-store" })
         .then(res => {
             if (!res.ok) throw new Error();
             return res.json();
