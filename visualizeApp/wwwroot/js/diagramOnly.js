@@ -1,4 +1,4 @@
-import { registerPadModule, drawCallGraph } from "./callGraph.js";
+import { registerPadModuleForScreen, drawCallGraph } from "./callGraph.js";
 import { sendLogData } from "./log.js";
 import { initMemoModule } from "./memo.js";
 import { drawPAD } from "./pad.js";
@@ -119,7 +119,7 @@ export function getMethodCallNode() {
 async function init() {
     const testId = getTestId();
     if (testId) {
-        registerPadModule({ getPadData, getMethodCallNode });
+        registerPadModuleForScreen("test", { getPadData, getMethodCallNode });
         testCallGraphPath = `/data/${testId}/callGraph.json`;
         testPADPath = `/data/${testId}/padDiagram.json`;
         updateCallGraph();

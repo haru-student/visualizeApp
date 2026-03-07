@@ -1,4 +1,4 @@
-import { drawCallGraph, registerPadModule } from "./callGraph.js";
+import { drawCallGraph, registerPadModuleForScreen } from "./callGraph.js";
 import { drawPAD } from "./pad.js";
 
 let callGraphData = "";
@@ -120,4 +120,4 @@ function extractMethodDiagram(fullDiagram, className, methodName) {
     };
 }
 
-registerPadModule({ getPadData, getMethodCallNode });
+registerPadModuleForScreen("index", { getPadData, getMethodCallNode });

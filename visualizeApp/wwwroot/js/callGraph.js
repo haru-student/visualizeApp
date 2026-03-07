@@ -2,17 +2,20 @@
 import { closeMemoEditor, hideMemo, openMemoEditor, showMemo } from "./memo.js";
 let getPadData = null;
 let getMethodCallNode = null;
+let registeredPadScreen = null;
 
-export function registerPadModule(module) {
+export function registerPadModuleForScreen(screen, module) {
   getPadData = module?.getPadData ?? null;
   getMethodCallNode = module?.getMethodCallNode ?? null;
+  registeredPadScreen = screen ?? null;
 }
 
 export async function drawCallGraph(data) {
     if (getPadData === null || getMethodCallNode === null) {
-      throw new Error("PADモジュールが未登録です");
+      throw new Error("PADモジュールが未登録です。registerPadModuleForScreen を先に呼び出してください。");
     }
     window.graphData = data;
+    window.registeredPadScreen = registeredPadScreen;
     const svg = d3.select("#graph-layer")
     const width = +svg.attr("width") || 800;
     const height = +svg.attr("height") || 600;
