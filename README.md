@@ -1,6 +1,20 @@
 # アプリの実行方法
-- [ローカル環境](#ローカル環境)
 - [公開中の確認用URL](#公開中の確認用url)
+- [研究についての概要]
+- [ローカル環境](#ローカル環境)
+
+## 公開中の確認用URL
+
+試しに触ってみたい場合は、以下の URL にアクセスしてください。
+
+- https://viz-app-cfbsfgc4gwbscygs.japanwest-01.azurewebsites.net
+
+実験ページは以下の URL です。被験者番号は適当な半角の数字を入力して下さい。（現在実験を行っていないため、数字は何でも大丈夫です）
+
+- https://viz-app-cfbsfgc4gwbscygs.japanwest-01.azurewebsites.net/test
+
+※ Azure の無料枠で運用しているため、まれにアクセスできない場合があります。
+
 
 ## ローカル環境
 
@@ -51,18 +65,6 @@ http://localhost:5059
 
 - この方法は **開発・デバッグ用**
 - Cosmos DB 接続情報が正しく設定されていれば、ローカルでも操作ログが保存される
-
-## 公開中の確認用URL
-
-試しに触ってみたい場合は、以下の URL にアクセスしてください。
-
-- https://viz-app-cfbsfgc4gwbscygs.japanwest-01.azurewebsites.net
-
-実験ページは以下の URL です。被験者番号は適当な半角の数字を入力して下さい。（現在実験を行っていないため、数字は何でも大丈夫です）
-
-- https://viz-app-cfbsfgc4gwbscygs.japanwest-01.azurewebsites.net/test
-
-※ Azure の無料枠で運用しているため、まれにアクセスできない場合があります。
 
 ## ビルド & 発行
 ```bash
