@@ -2,6 +2,46 @@
 import { initMemoModule } from "./memo.js";
 import { updateCallGraph } from "./visualize.js";
 
+const SAMPLE_CODE = `using System;
+
+class Program
+{
+    public static void Main()
+    {
+        Console.WriteLine("=== Start ===");
+
+        Counter.CountTo(3); // メソッド呼び出し（別クラス）
+
+        Console.WriteLine("=== End ===");
+        Console.ReadLine();
+    }
+}
+
+class Counter
+{
+    public static void CountTo(int limit)
+    {
+        for (int i = 1; i <= limit; i++)
+        {
+            Console.WriteLine($"Number: {i}");
+        }
+
+        int j = 0;
+        while (j < limit)
+        {
+            if (j % 2 == 0)
+            {
+                Console.WriteLine($"Even: {j}");
+            }
+            else
+            {
+                Console.WriteLine($"Odd: {j}");
+            }
+            j++;
+        }
+    }
+}
+`;
 // monaco editorの設定
 function initMonaco() {
     if (typeof require !== 'undefined') {
@@ -52,6 +92,7 @@ function initMonaco() {
                         document.getElementById("uploadSection").style.display = "block";
                         document.getElementById("visualSection").style.display = "none";
                         document.getElementById('legend').classList.add('d-none');
+                        sampleButton.disabled = false;
                         return;
                     }
                     const blob = new Blob([editedCode], { type: "text/plain" });
@@ -114,6 +155,22 @@ function initUpload() {
     });
 }
 
+function initSampleButton() {
+    const sampleButton = document.getElementById('sampleButton');
+    if (!sampleButton) return;
+
+    sampleButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        if (!window.editorInstance) {
+            console.warn("Monaco Editorがまだ初期化されていません");
+            return;
+        }
+        sampleButton.disabled = true;
+
+        window.editorInstance.setValue(SAMPLE_CODE);
+        window.editorInstance.focus();
+    });
+}
 function initView() {
     document.getElementById('toggleEditor').addEventListener('change', updateView);
     document.getElementById('toggleVisual').addEventListener('change', updateView);
@@ -176,8 +233,10 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('legend').classList.add('d-none');
     initMonaco();
     initUpload();
+    initSampleButton();
     initView();
     initMemoModule();
     document.cookie = "test=; Max-Age=0; path=/";
     document.cookie = "type=; Max-Age=0; path=/";
 });
+
