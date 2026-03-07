@@ -1,5 +1,4 @@
 // memo.js
-import d3Tip from "https://cdn.skypack.dev/d3-tip@0.9.1";
 import { sendLogData } from "./log.js";
 
 let editingId = null;
@@ -14,6 +13,26 @@ let tip = null;
 let IsTipShown = false;
 
 let memoTimer = null;
+let d3TipFactory = null;
+let d3TipFactoryPromise = null;
+
+function loadD3TipFactory() {
+  if (d3TipFactory) return Promise.resolve(d3TipFactory);
+  if (d3TipFactoryPromise) return d3TipFactoryPromise;
+
+  d3TipFactoryPromise = import("https://cdn.skypack.dev/d3-tip@0.9.1")
+    .then((mod) => {
+      d3TipFactory = mod?.default ?? null;
+      return d3TipFactory;
+    })
+    .catch((err) => {
+      console.warn("d3-tip の読み込みに失敗しました。メモのツールチップは無効化されます。", err);
+      d3TipFactory = null;
+      return null;
+    });
+
+  return d3TipFactoryPromise;
+}
 
 export function initMemoModule() {
   panel = document.getElementById("memo-panel");
@@ -22,7 +41,7 @@ export function initMemoModule() {
   saveBtn = document.getElementById("save-memo");
   closeBtn.addEventListener("click", () => closeMemoEditor());
   saveBtn.addEventListener("click", () => saveMemo());
-  initMemoTooltip();
+  loadD3TipFactory().then(() => initMemoTooltip());
 }
 
 export function openMemoEditor(node) {
@@ -81,7 +100,8 @@ function getMemoData(className, methodName, id) {
 }
 
 function initMemoTooltip() {
-  tip = d3Tip()
+  if (!d3TipFactory) return;
+  tip = d3TipFactory()
     .attr("class", "d3-tip memo-tooltip")
     .offset([-10, 0])
     .html((d) => `<div>${d.Memo}</div>`);
@@ -102,6 +122,7 @@ export function showMemo(detail, element) {
   const memo = memoData !== null ? memoData.Memo : "メモがありません";
 
   if (tip === null) initMemoTooltip();
+  if (tip === null) return;
 
   if (memoTimer !== null) {
     clearTimeout(memoTimer);

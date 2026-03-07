@@ -424,7 +424,7 @@ async function drawArgNode(target, args) {
       });
 
     // text（複数行）
-    const argText = argGroup.append("text")
+    const argTexts = argGroup.append("text")
       .attr("font-size", 15)
       .attr("fill", "#333")
       .attr("text-anchor", "start")
@@ -432,7 +432,7 @@ async function drawArgNode(target, args) {
 
     // 複数行対応（\n で分割）
     text.split("\n").forEach((line, i) => {
-      argText.append("tspan")
+      argTexts.append("tspan")
         .attr("x", 0)
         .attr("dy", i === 0 ? "1em" : "1.2em")
         .text(line);

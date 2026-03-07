@@ -42,9 +42,39 @@ class Counter
     }
 }
 `;
+
+function setSampleButtonDisabled(disabled) {
+    const sampleButton = document.getElementById('sampleButton');
+    if (!sampleButton) return;
+    sampleButton.disabled = disabled;
+}
+
+function waitForRequire(timeoutMs = 8000, intervalMs = 100) {
+    return new Promise((resolve) => {
+        if (typeof require !== 'undefined') {
+            resolve(true);
+            return;
+        }
+
+        const startedAt = Date.now();
+        const timer = setInterval(() => {
+            if (typeof require !== 'undefined') {
+                clearInterval(timer);
+                resolve(true);
+                return;
+            }
+            if (Date.now() - startedAt >= timeoutMs) {
+                clearInterval(timer);
+                resolve(false);
+            }
+        }, intervalMs);
+    });
+}
+
 // monaco editorの設定
-function initMonaco() {
-    if (typeof require !== 'undefined') {
+async function initMonaco() {
+    const requireReady = await waitForRequire();
+    if (requireReady) {
         require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs' } });
 
         require(['vs/editor/editor.main'], function () {
@@ -92,7 +122,7 @@ function initMonaco() {
                         document.getElementById("uploadSection").style.display = "block";
                         document.getElementById("visualSection").style.display = "none";
                         document.getElementById('legend').classList.add('d-none');
-                        sampleButton.disabled = false;
+                        setSampleButtonDisabled(false);
                         return;
                     }
                     const blob = new Blob([editedCode], { type: "text/plain" });
@@ -119,6 +149,8 @@ function initMonaco() {
                     sendLogData('start', null, null, null, null);
                 }, 1000);
             });
+        }, function (err) {
+            console.error('Monaco Editor の読み込みに失敗しました', err);
         });
     } else {
         console.error('RequireJSが読み込まれていません');
@@ -165,7 +197,7 @@ function initSampleButton() {
             console.warn("Monaco Editorがまだ初期化されていません");
             return;
         }
-        sampleButton.disabled = true;
+        setSampleButtonDisabled(true);
 
         window.editorInstance.setValue(SAMPLE_CODE);
         window.editorInstance.focus();
