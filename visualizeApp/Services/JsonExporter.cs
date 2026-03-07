@@ -1,14 +1,30 @@
-﻿using Newtonsoft.Json;
-using System.Reflection;
-
 namespace visualizeApp.Services
 {
+    public class CallGraphData
+    {
+        public required List<CallGraphNode> Nodes { get; set; }
+        public required List<CallGraphLink> Links { get; set; }
+    }
+
+    public class CallGraphNode
+    {
+        public required int Id { get; set; }
+        public required string Label { get; set; }
+        public required string Parameters { get; set; }
+    }
+
+    public class CallGraphLink
+    {
+        public required int Source { get; set; }
+        public required int Target { get; set; }
+    }
+
     public class JsonExporter
     {
         public List<Node> Nodes { get; private set; } = new List<Node>();
         public List<Link> Links { get; private set; } = new List<Link>();
-
-        private readonly HashSet<string> methodLabels = new();
+        public PadDiagram? CurrentPadDiagram { get; private set; }
+        public CallGraphData? CurrentCallGraph { get; private set; }
 
         public void addNode(int id, string type, string label, int depth, string className, string methodName, int lineNumber)
         {
@@ -30,7 +46,7 @@ namespace visualizeApp.Services
             var link = new Link
             {
                 Node1 = sourceId,
-                Node2 = targetId, 
+                Node2 = targetId,
                 Type = type,
                 Class = className,
                 Method = methodName
@@ -40,22 +56,28 @@ namespace visualizeApp.Services
 
         public void saveFile()
         {
-            // パッド図（ノードとリンク）を作成
-            var padDiagram = new PadDiagram
+            CurrentPadDiagram = new PadDiagram
             {
-                Nodes = Nodes,
-                Links = Links
+                Nodes = Nodes.Select(n => new Node
+                {
+                    Id = n.Id,
+                    Type = n.Type,
+                    Label = n.Label,
+                    Depth = n.Depth,
+                    Class = n.Class,
+                    Method = n.Method,
+                    LineNumber = n.LineNumber
+                }).ToList(),
+                Links = Links.Select(l => new Link
+                {
+                    Node1 = l.Node1,
+                    Node2 = l.Node2,
+                    Type = l.Type,
+                    Class = l.Class,
+                    Method = l.Method
+                }).ToList()
             };
 
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "data", "padDiagram.json");
-
-            string json = JsonConvert.SerializeObject(padDiagram, new JsonSerializerSettings
-            {
-                Formatting = Formatting.Indented,
-                NullValueHandling = NullValueHandling.Ignore
-            });
-
-            File.WriteAllText(filePath, json);
             Nodes.Clear();
             Links.Clear();
 
@@ -68,32 +90,35 @@ namespace visualizeApp.Services
             List<(string ClassName, string MethodName, string Parameters)> methodList,
             List<(string source, string target)> linkCallGraph)
         {
-            var nodes = new List<object>();
+            var nodes = new List<CallGraphNode>();
             int id = 0;
             var labelToId = new Dictionary<string, int>();
 
-            // ノードのID割り当て
             foreach (var (cls, method, param) in methodList)
             {
                 var label = $"{cls}.{method}";
                 if (!labelToId.ContainsKey(label))
                 {
                     labelToId[label] = id++;
-                    nodes.Add(new { id = labelToId[label], label, parameters = param });
+                    nodes.Add(new CallGraphNode
+                    {
+                        Id = labelToId[label],
+                        Label = label,
+                        Parameters = param
+                    });
                 }
             }
 
-            // linkCallGraph の string から id へ変換
-            var links = new List<object>();
+            var links = new List<CallGraphLink>();
             foreach (var (sourceLabel, targetLabel) in linkCallGraph)
             {
                 if (labelToId.TryGetValue(sourceLabel, out int sourceId) &&
                     labelToId.TryGetValue(targetLabel, out int targetId))
                 {
-                    links.Add(new
+                    links.Add(new CallGraphLink
                     {
-                        source = sourceId,
-                        target = targetId
+                        Source = sourceId,
+                        Target = targetId
                     });
                 }
                 else
@@ -102,21 +127,17 @@ namespace visualizeApp.Services
                 }
             }
 
-            // JSON オブジェクト作成
-            var callGraph = new
+            CurrentCallGraph = new CallGraphData
             {
-                nodes = nodes,
-                links = links
+                Nodes = nodes,
+                Links = links
             };
-
-            var json = System.Text.Json.JsonSerializer.Serialize(callGraph, new System.Text.Json.JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
-
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "data", "callGraph.json");
-            File.WriteAllText(filePath, json);
         }
 
+        public void ClearCurrentData()
+        {
+            CurrentPadDiagram = null;
+            CurrentCallGraph = null;
+        }
     }
 }

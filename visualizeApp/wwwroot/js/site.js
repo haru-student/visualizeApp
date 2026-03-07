@@ -71,6 +71,8 @@ function initMonaco() {
                         console.error("サーバーからの応答が不正です");
                         return;
                     }
+
+                    await response.json();
                     updateCallGraph();
                     // 開始のログ送信
                     sendLogData('start', null, null, null, null);

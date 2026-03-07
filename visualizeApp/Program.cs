@@ -13,10 +13,18 @@ builder.Configuration
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddControllers(); 
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+});
 
 builder.Services.AddSingleton<LogRepository>();
 builder.Services.AddSingleton<CodeAnalysis>();
 builder.Services.AddSingleton<LoggingService>();
+builder.Services.AddSingleton<VisualizationResultStore>();
 
 builder.Services.AddSingleton<CosmosClient>(s =>
 {
@@ -47,6 +55,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseSession();
 app.UseAuthorization();
 
 app.MapControllers();

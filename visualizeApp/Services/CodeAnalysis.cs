@@ -17,6 +17,10 @@ namespace visualizeApp.Services
         public static int depth = 0;
         private static JsonExporter jsonHandler = new JsonExporter();
         static bool isElse = false;
+        private readonly object _analysisLock = new();
+
+        public PadDiagram? CurrentPadDiagram => jsonHandler.CurrentPadDiagram;
+        public CallGraphData? CurrentCallGraph => jsonHandler.CurrentCallGraph;
 
         // MetadataReferenceのリストは一度だけ作成すれば良い
         private List<MetadataReference> references = new List<MetadataReference>
@@ -69,6 +73,76 @@ namespace visualizeApp.Services
             }
             jsonHandler.SaveCallGraph(methodList, linkCallGraph);
             jsonHandler.saveFile();
+        }
+
+        public void ClearCurrentData()
+        {
+            jsonHandler.ClearCurrentData();
+        }
+
+        public (PadDiagram? PadDiagram, CallGraphData? CallGraph) AnalyzeSnapshot(string code)
+        {
+            lock (_analysisLock)
+            {
+                Entry(code);
+                return (
+                    ClonePadDiagram(jsonHandler.CurrentPadDiagram),
+                    CloneCallGraph(jsonHandler.CurrentCallGraph)
+                );
+            }
+        }
+
+        private static PadDiagram? ClonePadDiagram(PadDiagram? source)
+        {
+            if (source == null)
+            {
+                return null;
+            }
+
+            return new PadDiagram
+            {
+                Nodes = source.Nodes.Select(n => new Node
+                {
+                    Id = n.Id,
+                    Type = n.Type,
+                    Label = n.Label,
+                    Class = n.Class,
+                    Method = n.Method,
+                    Depth = n.Depth,
+                    LineNumber = n.LineNumber
+                }).ToList(),
+                Links = source.Links.Select(l => new Link
+                {
+                    Node1 = l.Node1,
+                    Node2 = l.Node2,
+                    Type = l.Type,
+                    Class = l.Class,
+                    Method = l.Method
+                }).ToList()
+            };
+        }
+
+        private static CallGraphData? CloneCallGraph(CallGraphData? source)
+        {
+            if (source == null)
+            {
+                return null;
+            }
+
+            return new CallGraphData
+            {
+                Nodes = source.Nodes.Select(n => new CallGraphNode
+                {
+                    Id = n.Id,
+                    Label = n.Label,
+                    Parameters = n.Parameters
+                }).ToList(),
+                Links = source.Links.Select(l => new CallGraphLink
+                {
+                    Source = l.Source,
+                    Target = l.Target
+                }).ToList()
+            };
         }
 
         static void AnalyzeClass(ClassDeclarationSyntax classDecl, SemanticModel semanticModel) // semanticModelを引数に追加
