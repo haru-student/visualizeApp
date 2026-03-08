@@ -1,6 +1,6 @@
 # アプリの実行方法
+- [研究についての概要](https://docs.google.com/document/d/1_Ws7FbFRI5tauejdyz0jQXxaK1f2YSdcHNxiCElkN70/edit?usp=sharing)
 - [公開中の確認用URL](#公開中の確認用url)
-- [研究についての概要]
 - [ローカル環境](#ローカル環境)
 
 ## 公開中の確認用URL
