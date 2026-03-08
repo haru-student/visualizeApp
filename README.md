@@ -1,4 +1,4 @@
-# アプリの実行方法
+# アプリと研究について
 - [研究についての概要](https://docs.google.com/document/d/1_Ws7FbFRI5tauejdyz0jQXxaK1f2YSdcHNxiCElkN70/edit?usp=sharing)
 - [公開中の確認用URL](#公開中の確認用url)
 - [ローカル環境](#ローカル環境)
