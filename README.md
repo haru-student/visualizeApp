@@ -7,7 +7,7 @@
 
 試しに触ってみたい場合は、以下の URL にアクセスしてください。
 
-- https://viz-app-cfbsfgc4gwbscygs.japanwest-01.azurewebsites.net
+https://viz-app-cfbsfgc4gwbscygs.japanwest-01.azurewebsites.net
 
 ※ Azure の無料枠で運用しているため、まれにアクセスできない場合があります。
 
