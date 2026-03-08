@@ -10,7 +10,8 @@ let hoverMethod = null;
 let memoData = [];
 let panel, textarea, closeBtn, saveBtn;
 let tip = null;
-let IsTipShown = false;
+let isTipShown = false;
+let fallbackTooltip = null;
 
 let memoTimer = null;
 let d3TipFactory = null;
@@ -26,7 +27,7 @@ function loadD3TipFactory() {
       return d3TipFactory;
     })
     .catch((err) => {
-      console.warn("d3-tip の読み込みに失敗しました。メモのツールチップは無効化されます。", err);
+      console.warn("d3-tip の読み込みに失敗しました。メモの表示をフォールバックします。", err);
       d3TipFactory = null;
       return null;
     });
@@ -39,34 +40,38 @@ export function initMemoModule() {
   textarea = document.getElementById("memo-text");
   closeBtn = document.getElementById("close-memo");
   saveBtn = document.getElementById("save-memo");
+
   closeBtn.addEventListener("click", () => closeMemoEditor());
   saveBtn.addEventListener("click", () => saveMemo());
   loadD3TipFactory().then(() => initMemoTooltip());
 }
 
 export function openMemoEditor(node) {
-  if (panel.classList.contains("open") && editingId === node.Id && editingClass === node.Class && editingMethod === node.Method)
+  if (
+    panel.classList.contains("open") &&
+    editingId === node.Id &&
+    editingClass === node.Class &&
+    editingMethod === node.Method
+  ) {
     return;
+  }
+
   editingId = node.Id;
   editingClass = node.Class;
   editingMethod = node.Method;
 
   const existing = getMemoData(editingClass, editingMethod, editingId);
-  if (existing !== null) {
-    textarea.value = existing.Memo;
-  } else {
-    textarea.value = "";
-  }
-  // 表示
+  textarea.value = existing !== null ? existing.Memo : "";
+
   panel.classList.add("open");
-  sendLogData('openMemoEditor', editingClass, editingMethod, editingId, null);
+  sendLogData("openMemoEditor", editingClass, editingMethod, editingId, null);
 }
 
 export function closeMemoEditor() {
-  if (!panel.classList.contains("open"))
-    return;
+  if (!panel.classList.contains("open")) return;
+
   panel.classList.remove("open");
-  sendLogData('closeMemoEditor', editingClass, editingMethod, editingId, null);
+  sendLogData("closeMemoEditor", editingClass, editingMethod, editingId, null);
 }
 
 function saveMemo() {
@@ -81,10 +86,10 @@ function saveMemo() {
       Memo: textarea.value,
     });
   }
+
   panel.classList.remove("open");
-  // メモ編集ログ
   sendLogData("updateMemo", editingClass, editingMethod, editingId, {
-    'Memo': textarea.value,
+    Memo: textarea.value,
   });
 }
 
@@ -92,37 +97,65 @@ function getMemoData(className, methodName, id) {
   const existing = memoData.find(
     (m) => m.Class === className && m.Method === methodName && m.Id === id
   );
-  if (existing) {
-    return existing;
-  } else {
-    return null;
-  }
+  return existing ?? null;
 }
 
 function initMemoTooltip() {
   if (!d3TipFactory) return;
+
   tip = d3TipFactory()
     .attr("class", "d3-tip memo-tooltip")
     .offset([-10, 0])
     .html((d) => `<div>${d.Memo}</div>`);
 
-  // あなたの SVG の ID に合わせて
   const svg = d3.select("#pad-layer");
   svg.call(tip);
 }
 
-//ノードホバー時にメモの表示
+function ensureFallbackTooltip() {
+  if (fallbackTooltip) return fallbackTooltip;
+
+  const el = document.createElement("div");
+  el.className = "memo-tooltip";
+  el.style.position = "fixed";
+  el.style.display = "none";
+  el.style.pointerEvents = "none";
+  el.style.zIndex = "20";
+  document.body.appendChild(el);
+
+  fallbackTooltip = el;
+  return fallbackTooltip;
+}
+
+function showFallbackTooltip(memo, element) {
+  const el = ensureFallbackTooltip();
+  el.textContent = memo;
+
+  const rect = element.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top - 12;
+
+  el.style.left = `${x}px`;
+  el.style.top = `${y}px`;
+  el.style.transform = "translate(-50%, -100%)";
+  el.style.display = "block";
+}
+
+function hideFallbackTooltip() {
+  if (!fallbackTooltip) return;
+  fallbackTooltip.style.display = "none";
+}
+
+// ノードホバー時にメモの表示
 export function showMemo(detail, element) {
   hoverClass = detail.Class;
   hoverMethod = detail.Method;
   hoverId = detail.Id;
-  const memoData = getMemoData(hoverClass, hoverMethod, hoverId);
-  if (memoData === null || memoData.Memo === "") return;
 
-  const memo = memoData !== null ? memoData.Memo : "メモがありません";
+  const existing = getMemoData(hoverClass, hoverMethod, hoverId);
+  if (existing === null || existing.Memo === "") return;
 
-  if (tip === null) initMemoTooltip();
-  if (tip === null) return;
+  const memo = existing.Memo;
 
   if (memoTimer !== null) {
     clearTimeout(memoTimer);
@@ -131,29 +164,43 @@ export function showMemo(detail, element) {
 
   memoTimer = setTimeout(() => {
     try {
-      tip.show({ Memo: memo }, element);
-      IsTipShown = true;
-      // メモ表示ログ
-      sendLogData('showMemo', hoverClass, hoverMethod, hoverId, {'Memo': memo});
+      if (tip === null) initMemoTooltip();
+
+      if (tip) {
+        tip.show({ Memo: memo }, element);
+      } else {
+        showFallbackTooltip(memo, element);
+      }
+
+      isTipShown = true;
+      sendLogData("showMemo", hoverClass, hoverMethod, hoverId, { Memo: memo });
     } catch (e) {
       console.warn("Tooltip failed:", e, element);
     }
-    memoTimer = null; 
+
+    memoTimer = null;
   }, 300);
 }
 
 // ホバーアウト時にメモを非表示
 export function hideMemo() {
-if (memoTimer !== null) {
-  clearTimeout(memoTimer); 
-  memoTimer = null;
-  return;
-}
-  if (!tip || !IsTipShown)
+  if (memoTimer !== null) {
+    clearTimeout(memoTimer);
+    memoTimer = null;
     return;
-  IsTipShown = false;
-  tip.hide();
-  // メモ非表示ログ
-  const memo = getMemoData(hoverClass, hoverMethod, hoverId) !== null ? getMemoData(hoverClass, hoverMethod, hoverId).Memo : null;
-  sendLogData('hideMemo', hoverClass, hoverMethod, hoverId, {'Memo': memo});
+  }
+
+  if (!isTipShown) {
+    hideFallbackTooltip();
+    return;
+  }
+
+  isTipShown = false;
+  if (tip) {
+    tip.hide();
+  }
+  hideFallbackTooltip();
+
+  const memo = getMemoData(hoverClass, hoverMethod, hoverId)?.Memo ?? null;
+  sendLogData("hideMemo", hoverClass, hoverMethod, hoverId, { Memo: memo });
 }
