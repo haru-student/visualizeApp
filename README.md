@@ -20,7 +20,7 @@
 
 開発中は `dotnet run` を使用してローカル実行できる。
 
-### 0. Cosmos DB 接続情報（操作ログ保存用）を設定する
+### 1. Cosmos DB 接続情報（操作ログ保存用）を設定する
 
 ローカルでも本番でも、操作ログは Cosmos DB に保存される。
 ただし、**キーはリポジトリに含めず**、以下の順で読み込む。
@@ -44,7 +44,7 @@ COSMOS_KEY=<your-cosmos-key>
 
 Azure 本番環境では App Service の「環境変数（Application Settings）」に `COSMOS_ENDPOINT` / `COSMOS_KEY` を設定する。
 
-### 1. アプリを起動する
+### 2. アプリを起動する
 
 ```bash
 dotnet run
@@ -52,7 +52,7 @@ dotnet run
 
 ---
 
-### 2. ブラウザからアクセスする
+### 3. ブラウザからアクセスする
 
 起動時に表示される URL（例）にアクセスする。
 http://localhost:5059
