@@ -11,6 +11,8 @@ https://viz-app-cfbsfgc4gwbscygs.japanwest-01.azurewebsites.net
 
 ※ Azure の無料枠で運用しているため、まれにアクセスできない場合があります。
 
+※ 基本的にはPCでの利用を想定しています。
+
 
 ## ローカル環境
 
