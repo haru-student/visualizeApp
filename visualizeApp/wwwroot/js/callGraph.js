@@ -15,6 +15,10 @@ export async function drawCallGraph(data) {
       throw new Error("PADモジュールが未登録です。registerPadModuleForScreen を先に呼び出してください。");
     }
     window.graphData = data;
+    window.currentSimulation?.stop();
+    window.currentSimulation = null;
+    window.displayedMethods = null;
+    window.displayedPAD = "";
     window.registeredPadScreen = registeredPadScreen;
     const svg = d3.select("#graph-layer")
     const width = +svg.attr("width") || 800;
@@ -25,10 +29,32 @@ export async function drawCallGraph(data) {
     svg.selectAll("*").remove();
 
     const color = createClassColorScale(data.nodes);
+    const drag = d3.drag()
+        .clickDistance(4)
+        .on("start", function () {
+            hideMemo();
+            d3.select(this).style("cursor", "grabbing");
+        })
+        .on("drag", (event, d) => {
+            clearTimeout(clickTimeout);
+            clickTimeout = null;
+            d.x = d.fx = event.x;
+            d.y = d.fy = event.y;
+            d.vx = d.vy = 0;
+            renderGraphPositions();
+        })
+        .on("end", function () {
+            d3.select(this).style("cursor", "grab");
+        });
 
     if (data.nodes.length === 1) {
         // ノードが1つだけのときは中央に長方形で表示
         const node = svg.append("g")
+            .datum(Object.assign(data.nodes[0], { x: 50, y: 30, fx: 50, fy: 30 }))
+            .classed("nodeStyle", true)
+            .style("cursor", "grab")
+            .style("user-select", "none")
+            .call(drag)
             .attr("transform", `translate(${50}, ${30})`)
 
         node.append("rect")
@@ -91,6 +117,7 @@ export async function drawCallGraph(data) {
         .enter().append("g")
         .classed("nodeStyle", true)
         .on("click", (event, d) => {
+          if (event.defaultPrevented) return;
           // ダブルクリック判定
           if (clickTimeout !== null) {
               clearTimeout(clickTimeout);
@@ -130,6 +157,8 @@ export async function drawCallGraph(data) {
         hideMemo();
       });
 
+    node.style("cursor", "grab").style("user-select", "none").call(drag);
+
     node.append("rect")
         .attr("x", -40)
         .attr("y", -20)
@@ -146,23 +175,52 @@ export async function drawCallGraph(data) {
         .attr("dy", "0.35em")
         .text(d => d.label.split('.').pop());
 
-    simulation.on("tick", () => {
-        link
+    simulation.on("tick", renderGraphPositions);
+    window.currentSimulation = simulation;
+}
+
+function renderGraphPositions() {
+        const svg = d3.select("#graph-layer");
+        svg.selectAll("line.graph-link")
             .attr("x1", d => d.source.x)
             .attr("y1", d => d.source.y)
             .attr("x2", d => offsetLine(d.source, d.target).x)
             .attr("y2", d => offsetLine(d.source, d.target).y);
 
-        node
+        svg.selectAll("g.nodeStyle")
             .attr("transform", d => `translate(${d.x},${d.y})`);
-    });
-    window.currentSimulation = simulation;
+        d3.select("#pad-layer").selectAll("g.pad-content")
+            .attr("transform", d => {
+                const offset = getPadOffset(d);
+                return `translate(${offset.x},${offset.y})`;
+            });
+        svg.selectAll("line.overlay-link, g.arg-node").each(function () {
+            this.updatePosition?.();
+        });
+}
+
+function getPadOffset(anchor) {
+    return {
+        x: (anchor.node.fx ?? anchor.node.x) - anchor.x,
+        y: (anchor.node.fy ?? anchor.node.y) - anchor.y
+    };
+}
+
+export function registerPadPosition(x, y) {
+    const node = window.graphData?.nodes.find(n => n.label === window.displayedMethods);
+    const anchor = { node: node ?? { x, y }, x, y };
+    const offset = getPadOffset(anchor);
+    return d3.select("#pad-layer").append("g")
+        .attr("class", "pad-content")
+        .datum(anchor)
+        .attr("transform", `translate(${offset.x},${offset.y})`);
 }
 
 function offsetLine(source, target, offset = 40) {
     const dx = target.x - source.x;
     const dy = target.y - source.y;
     const len = Math.sqrt(dx * dx + dy * dy);
+    if (len === 0) return { x: target.x, y: target.y };
     const ratio = (len - offset) / len;
     return {
         x: source.x + dx * ratio,
@@ -177,44 +235,21 @@ function handleOpenPAD(d) {
   else if(window.displayedMethods != d.label)
     switchPad(d);
   else
-    resetGraphLayout();
+    closePad();
     return;
 }
 function openPadForNode(d) {
-  d.fx = 100;
-  d.fy = 200;
-
-  const nodes = window.graphData.nodes; 
-
-  // 他ノードを散らす（現状ロジックそのまま）
-  nodes.forEach(n => {
-    if (n.id !== d.id) {
-      n.fx = n.fx;
-      n.fy = 30 + Math.random() * 170;
-    }
-  });
+  // 初期配置の途中でも、PADを開いた時点の配置を保持する。
+  window.currentSimulation?.stop();
 
   window.displayedMethods = d.label;
-  getPadData(d.fx, d.fy);
+  getPadData(d.x, d.y);
 
   // 対象ノードから出るリンクを隠す
   d3.select("#graph-layer").selectAll("line.graph-link")
     .filter(l => l && l.source && l.source.id === d.id)
     .style("display", "none");
 
-  // ===== ③ 修正ここから =====
-  window.currentSimulation.alpha(0.8).restart();
-
-  // 衝突解決のための減衰フェーズ
-  setTimeout(() => {
-    window.currentSimulation.alphaTarget(0);
-  }, 600);
-
-  // 完全に落ち着いてから停止
-  setTimeout(() => {
-    window.currentSimulation.stop();
-  }, 1200);
-  
   const args = (d.parameters ?? "")
     .split(",")
     .map(p => p.trim())
@@ -228,11 +263,6 @@ function openPadForNode(d) {
 
 
 function switchPad(newNode) {
-  const nodes = window.graphData.nodes; 
-  nodes.forEach(n => {
-      n.fx = null;
-      n.fy = null;
-  });
   if(window.methodCallLines && window.methodCallLines.size > 0) {
     window.methodCallLines.forEach(line => line.remove()); // DOMから削除
     window.methodCallLines.clear();                        // 参照もクリア
@@ -240,23 +270,17 @@ function switchPad(newNode) {
   d3.select("#graph-layer").selectAll("line")
       .style("display", null);
   window.displayedMethods = null;
-  displayedPAD = "";
+  window.displayedPAD = "";
   d3.select("#pad-layer").selectAll("*").remove();
   openPadForNode(newNode);
 }
 
-function resetGraphLayout() {
+function closePad() {
   //PADを閉じる
   window.displayedMethods = null;
   d3.select("#pad-layer").selectAll("*").remove();
   window.displayedPAD = "";
 
-  //ノードの固定を解除
-  const nodes = window.graphData.nodes;
-  nodes.forEach(n => {
-    n.fx = null;
-    n.fy = null;
-  });
   if(window.methodCallLines && window.methodCallLines.size > 0) {
     window.methodCallLines.forEach(line => line.remove()); // DOMから削除
     window.methodCallLines.clear();                        // 参照もクリア
@@ -265,9 +289,6 @@ function resetGraphLayout() {
   //コールグラフの再表示
   d3.select("#graph-layer").selectAll("line")
       .style("display", null);
-
-  // force を再加熱して再レイアウト
-  window.currentSimulation.alpha(1).restart();
 
   // PADを閉じるログ
   sendLogData('closePAD', null, null, null, null);
@@ -288,24 +309,19 @@ export function drawMethodCallLink(label, arg = null, x, y) {
   window.methodCallLines.set(label, line);
 
   // drawCallGraph と同じく tick イベントで毎回座標更新
-  window.currentSimulation.on("tick.drawMethodCall_" + label, () => {
+  const anchor = d3.select("#pad-layer g.pad-content").datum();
+  line.node().updatePosition = () => {
     const targetNode = targetNodeSel.datum(); // 最新座標を参照
-    const targetOffset = offsetLine({ x, y }, targetNode, 40);
+    const offset = anchor ? getPadOffset(anchor) : { x: 0, y: 0 };
+    const source = { x: x + offset.x, y: y + offset.y };
+    const targetOffset = offsetLine(source, targetNode, 40);
     line
-      .attr("x1", x)
-      .attr("y1", y)
+      .attr("x1", source.x)
+      .attr("y1", source.y)
       .attr("x2", targetOffset.x)
       .attr("y2", targetOffset.y);
-  });
-  if (window.currentSimulation) {
-    window.currentSimulation.alpha(0.3).restart();
-
-    // 数百ms後に再び止める（動き続けないように）
-    setTimeout(() => {
-      window.currentSimulation.alphaTarget(0);
-      window.currentSimulation.stop();
-    }, 100);
-  }
+  };
+  line.node().updatePosition();
 }
 
 function createClassColorScale(nodes, legendSelector = "#legend") {
@@ -456,9 +472,8 @@ async function drawArgNode(target, args) {
     const svg = d3.select("#graph-layer");
     const sourceNodeSel = svg.selectAll("g.nodeStyle").filter(d => d.label === n.Class+"." + n.Method);
     const sourceNode = sourceNodeSel.datum();
-    window.currentSimulation.on(
-      "tick.argNode_" + target.label,
-      () => {
+    if (!sourceNode) return;
+    argGroup.node().updatePosition = () => {
         const sourcePos = { x: sourceNode.x, y: sourceNode.y }; // ★追加
         const targetPos = { x: target.x, y: target.y };         // ★追加
 
@@ -479,8 +494,8 @@ async function drawArgNode(target, args) {
           "transform",
           `translate(${midX}, ${midY})`
         );
-      }
-    );
+      };
+    argGroup.node().updatePosition();
     idCount++;
   });
 }

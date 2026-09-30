@@ -1,12 +1,13 @@
 ﻿import { drawMethodCallLink } from "./callGraph.js";
 import { hideMemo, openMemoEditor, showMemo } from "./memo.js";
+import { registerPadPosition } from "./callGraph.js";
 
 export function drawPAD(data, posX = 0, posY = 0) {
   if(window.methodCallLines && window.methodCallLines.size > 0){
     window.methodCallLines.forEach(line => line.remove()); // DOMから削除
     window.methodCallLines.clear();                        // 参照もクリア
   }
-  const svg = d3.select("#pad-layer");
+  const svg = registerPadPosition(posX, posY);
   let x = posX;
   let y = posY + 50;
 
