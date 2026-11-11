@@ -186,96 +186,7 @@ namespace visualizeApp.Services
             {
                 var lineSpan = statement.GetLocation().GetLineSpan();
                 int lineNumber = lineSpan.StartLinePosition.Line + 1;
-                if (statement is ExpressionStatementSyntax exprStmt)
-                {
-                    if (exprStmt.Expression is InvocationExpressionSyntax invocation)
-                    {
-                        // ここで渡すinvocationが、このsemanticModelのツリーに属していることを保証
-                        var symbol = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
-
-                        // ▼ ここを修正：nullチェック + 自作メソッドかチェック
-                        if (symbol != null && symbol.Locations.Any(loc => loc.IsInSource))
-                        {
-                            string calledClass = symbol.ContainingType.ToDisplayString(); // 呼び出し先クラス名
-                            string calledMethod = symbol.Name;                            // 呼び出し先メソッド名
-
-                            string argumentText = GetArgumentText(invocation);
-
-                            jsonHandler.addNode(id, "methodCall", invocation.ToString(), depth, currentClassName, currentMethodName, lineNumber, calledClass, calledMethod, argumentText);
-                            CreateLink("expression"); // ← この関数はstaticなので、直接呼び出し
-                            SaveCondition("expression"); // ← この関数はstaticなので、直接呼び出し
-                            linkCallGraph.Add((currentClassName + "." + currentMethodName, calledClass + "." + calledMethod));
-                        }
-                        else
-                        {
-                            jsonHandler.addNode(id, "expression", exprStmt.Expression.ToString(), depth, currentClassName, currentMethodName, lineNumber);
-                            CreateLink("expression");
-                            SaveCondition("expression");
-                        }
-                    }
-                    else
-                    {
-                        jsonHandler.addNode(id, "expression", exprStmt.Expression.ToString(), depth, currentClassName, currentMethodName, lineNumber);
-                        CreateLink("expression");
-                        SaveCondition("expression");
-                    }
-                    id++;
-                }
-                else if (statement is LocalDeclarationStatementSyntax localDeclStmt)
-                {
-                    var invocation = localDeclStmt
-                        .DescendantNodes()
-                        .OfType<InvocationExpressionSyntax>()
-                        .FirstOrDefault();
-
-                    if (invocation != null)
-                    {
-                        var symbol = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
-
-                        if (symbol != null && symbol.Locations.Any(loc => loc.IsInSource))
-                        {
-                            string calledClass = symbol.ContainingType.ToDisplayString();
-                            string calledMethod = symbol.Name;
-
-                            jsonHandler.addNode(
-                                id,
-                                "methodCall",
-                                localDeclStmt.ToString(),
-                                depth,
-                                currentClassName,
-                                currentMethodName,
-                                lineNumber,
-                                calledClass,
-                                calledMethod,
-                                GetArgumentText(invocation)
-                            );
-
-                            CreateLink("expression");
-                            SaveCondition("expression");
-
-                            linkCallGraph.Add((
-                                currentClassName + "." + currentMethodName,
-                                calledClass + "." + calledMethod
-                            ));
-                        }
-                        else
-                        {
-                            jsonHandler.addNode(id, "localDeclaration", localDeclStmt.ToString(), depth, currentClassName, currentMethodName, lineNumber);
-                            CreateLink("localDecl");
-                            SaveCondition("localDecl");
-                        }
-                    }
-                    else
-                    {
-                        jsonHandler.addNode(id, "localDeclaration", localDeclStmt.ToString(), depth, currentClassName, currentMethodName, lineNumber);
-                        CreateLink("localDecl");
-                        SaveCondition("localDecl");
-                    }
-
-                    id++;
-                }
-
-                else if (statement is IfStatementSyntax ifStmt)
+                if (statement is IfStatementSyntax ifStmt)
                 {
                     jsonHandler.addNode(id, "if", ifStmt.Condition.ToString(), depth, currentClassName, currentMethodName, lineNumber);
                     CreateLink("if");
@@ -334,43 +245,136 @@ namespace visualizeApp.Services
                     depth = tmp;
                     DeleteCondition(); // このDeleteConditionはelse/else ifブロックの後に呼ばれるべきか、ロジック要確認
                 }
-                else if (statement is ForStatementSyntax forStmt)
+                else if (statement is ForStatementSyntax or WhileStatementSyntax)
                 {
-                    string forDetails = $"{string.Join(", ", forStmt.Declaration.Variables)};{forStmt.Condition};{forStmt.Incrementors}";
-                    jsonHandler.addNode(id, "loop", forDetails, depth, currentClassName, currentMethodName, lineNumber);
-                    CreateLink("loop");
-                    SaveCondition("loop");
-                    id++;
-                    depth++;
-                    // 再帰呼び出しにもsemanticModelを渡す
-                    AnalyzeStatements(forStmt.Statement is BlockSyntax forBlock
-                        ? forBlock.Statements
-                        : SyntaxFactory.SingletonList(forStmt.Statement), semanticModel); // semanticModelを渡す
-                    depth--;
-                    DeleteCondition();
+                    if (statement is ForStatementSyntax forStmt)
+                    {
+                        string forDetails = $"{string.Join(", ", forStmt.Declaration.Variables)};{forStmt.Condition};{forStmt.Incrementors}";
+                        jsonHandler.addNode(id, "loop", forDetails, depth, currentClassName, currentMethodName, lineNumber);
+                        CreateLink("loop");
+                        SaveCondition("loop");
+                        id++;
+                        depth++;
+                        // 再帰呼び出しにもsemanticModelを渡す
+                        AnalyzeStatements(forStmt.Statement is BlockSyntax forBlock
+                            ? forBlock.Statements
+                            : SyntaxFactory.SingletonList(forStmt.Statement), semanticModel); // semanticModelを渡す
+                        depth--;
+                        DeleteCondition();
+                    }
+                    else if (statement is WhileStatementSyntax whileStmt)
+                    {
+                        jsonHandler.addNode(id, "loop", whileStmt.Condition.ToString(), depth, currentClassName, currentMethodName, lineNumber);
+                        CreateLink("loop");
+                        SaveCondition("loop");
+                        id++;
+                        depth++;
+                        // 再帰呼び出しにもsemanticModelを渡す
+                        AnalyzeStatements(whileStmt.Statement is BlockSyntax forBlock
+                            ? forBlock.Statements
+                            : SyntaxFactory.SingletonList(whileStmt.Statement), semanticModel); // semanticModelを渡す
+                        depth--;
+                        DeleteCondition();
+                    }
                 }
-                else if (statement is WhileStatementSyntax whileStmt)
-                {
-                    jsonHandler.addNode(id, "loop", whileStmt.Condition.ToString(), depth, currentClassName, currentMethodName, lineNumber);
-                    CreateLink("loop");
-                    SaveCondition("loop");
-                    id++;
-                    depth++;
-                    // 再帰呼び出しにもsemanticModelを渡す
-                    AnalyzeStatements(whileStmt.Statement is BlockSyntax forBlock
-                        ? forBlock.Statements
-                        : SyntaxFactory.SingletonList(whileStmt.Statement), semanticModel); // semanticModelを渡す
-                    depth--;
-                    DeleteCondition();
-                }
-                // 一時的に
                 else
                 {
-                    // その他のステートメントもノードとして追加
-                    jsonHandler.addNode(id, "expression", statement.ToString(), depth, currentClassName, currentMethodName, lineNumber);
-                    CreateLink("expression");
-                    SaveCondition("expression");
-                    id++;
+                    if (statement is ExpressionStatementSyntax exprStmt)
+                    {
+                        if (exprStmt.Expression is InvocationExpressionSyntax invocation)
+                        {
+                            // ここで渡すinvocationが、このsemanticModelのツリーに属していることを保証
+                            var symbol = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
+
+                            // ▼ ここを修正：nullチェック + 自作メソッドかチェック
+                            if (symbol != null && symbol.Locations.Any(loc => loc.IsInSource))
+                            {
+                                string calledClass = symbol.ContainingType.ToDisplayString(); // 呼び出し先クラス名
+                                string calledMethod = symbol.Name;                            // 呼び出し先メソッド名
+
+                                string argumentText = GetArgumentText(invocation);
+
+                                jsonHandler.addNode(id, "methodCall", invocation.ToString(), depth, currentClassName, currentMethodName, lineNumber, calledClass, calledMethod, argumentText);
+                                CreateLink("expression"); // ← この関数はstaticなので、直接呼び出し
+                                SaveCondition("expression"); // ← この関数はstaticなので、直接呼び出し
+                                linkCallGraph.Add((currentClassName + "." + currentMethodName, calledClass + "." + calledMethod));
+                            }
+                            else
+                            {
+                                jsonHandler.addNode(id, "expression", exprStmt.Expression.ToString(), depth, currentClassName, currentMethodName, lineNumber);
+                                CreateLink("expression");
+                                SaveCondition("expression");
+                            }
+                        }
+                        else
+                        {
+                            jsonHandler.addNode(id, "expression", exprStmt.Expression.ToString(), depth, currentClassName, currentMethodName, lineNumber);
+                            CreateLink("expression");
+                            SaveCondition("expression");
+                        }
+                        id++;
+                    }
+                    else if (statement is LocalDeclarationStatementSyntax localDeclStmt)
+                    {
+                        var invocation = localDeclStmt
+                            .DescendantNodes()
+                            .OfType<InvocationExpressionSyntax>()
+                            .FirstOrDefault();
+
+                        if (invocation != null)
+                        {
+                            var symbol = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
+
+                            if (symbol != null && symbol.Locations.Any(loc => loc.IsInSource))
+                            {
+                                string calledClass = symbol.ContainingType.ToDisplayString();
+                                string calledMethod = symbol.Name;
+
+                                jsonHandler.addNode(
+                                    id,
+                                    "methodCall",
+                                    localDeclStmt.ToString(),
+                                    depth,
+                                    currentClassName,
+                                    currentMethodName,
+                                    lineNumber,
+                                    calledClass,
+                                    calledMethod,
+                                    GetArgumentText(invocation)
+                                );
+
+                                CreateLink("expression");
+                                SaveCondition("expression");
+
+                                linkCallGraph.Add((
+                                    currentClassName + "." + currentMethodName,
+                                    calledClass + "." + calledMethod
+                                ));
+                            }
+                            else
+                            {
+                                jsonHandler.addNode(id, "localDeclaration", localDeclStmt.ToString(), depth, currentClassName, currentMethodName, lineNumber);
+                                CreateLink("localDecl");
+                                SaveCondition("localDecl");
+                            }
+                        }
+                        else
+                        {
+                            jsonHandler.addNode(id, "localDeclaration", localDeclStmt.ToString(), depth, currentClassName, currentMethodName, lineNumber);
+                            CreateLink("localDecl");
+                            SaveCondition("localDecl");
+                        }
+
+                        id++;
+                    }
+
+                    else
+                    {
+                        jsonHandler.addNode(id, "expression", statement.ToString(), depth, currentClassName, currentMethodName, lineNumber);
+                        CreateLink("expression");
+                        SaveCondition("expression");
+                        id++;
+                    }
                 }
             }
         }
