@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "コードの可視化";
+    ViewData["Fullscreen"] = true;
 }
 
 <div class="d-none d-md-block">
@@ -13,14 +14,14 @@
     </div>
 </div>
 
-<div class="row">
+<div class="row workspace-row">
     <div class="col-4" id="editor-col">
         <div id="code-editor"></div>
     </div>
     <div class="col-8" id="visual-col">
         <!-- アップロード用 -->
         <div id="uploadSection" style="display: none;">
-            <div class="d-flex justify-content-center align-items-center vh-100">
+            <div class="d-flex justify-content-center align-items-center h-100">
                 <div class="text-center">
                     <h3 class="mb-3" id="uploadMessage" class="text-break-keep">コードを書くかファイルをアップロードしてください</h3>
                     <form id="uploadForm">
@@ -35,9 +36,9 @@
 
         <!-- 可視化用 -->
         <div id="legend" class="legend-box position-fixed bottom-0 end-0 m-3 p-3 bg-white border rounded shadow d-none"></div>
-        <div class="position-relative" id="visualSection" style="width: 8000px; height: 6000px;">
-            <svg id="graph-layer" class="position-absolute top-0 start-0 w-100 h-100" width="800" height="600"></svg>
-            <svg id="pad-layer" class="position-absolute top-0 start-0 w-100 h-100" width="8000" height="6000"></svg>
+        <div class="position-relative w-100 h-100" id="visualSection">
+            <svg id="graph-layer" class="position-absolute top-0 start-0 w-100 h-100"></svg>
+            <svg id="pad-layer" class="position-absolute top-0 start-0 w-100 h-100"></svg>
         </div>
     </div>
 </div>

@@ -21,8 +21,7 @@ export async function drawCallGraph(data) {
     window.displayedPAD = "";
     window.registeredPadScreen = registeredPadScreen;
     const svg = d3.select("#graph-layer")
-    const width = +svg.attr("width") || 800;
-    const height = +svg.attr("height") || 600;
+    const { width, height } = svg.node().getBoundingClientRect();
 
     let clickTimeout = null;
 
