@@ -1,11 +1,19 @@
 # アプリと研究について
 - [研究についての概要](https://docs.google.com/document/d/1_Ws7FbFRI5tauejdyz0jQXxaK1f2YSdcHNxiCElkN70/edit?usp=sharing)
+- [成果物スクリーンショット](#成果物スクリーンショット)
 - [公開中の確認用URL](#公開中の確認用url)
 - [ローカル環境](#ローカル環境)
 
+## 成果物スクリーンショット
+### アップロード画面
+<img width="1920" height="1140" alt="image" src="https://github.com/user-attachments/assets/69ea9f7f-2fad-4189-8d9b-2e050ec361df" />
+
+### 可視化画面
+<img width="1920" height="1140" alt="image" src="https://github.com/user-attachments/assets/f7684117-5167-4666-864a-83ae6acada33" />
+
 ## 公開中の確認用URL
 
-試しに触ってみたい場合は、以下の URL にアクセスしてください。
+現在は、昨今のサイバー攻撃の情勢を踏まえ、安全面から非公開としています。
 
 https://viz-app-cfbsfgc4gwbscygs.japanwest-01.azurewebsites.net
 
