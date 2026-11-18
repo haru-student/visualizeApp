@@ -1,6 +1,11 @@
 ﻿import { sendLogData } from "./log.js";
 import { closeMemoEditor, hideMemo, openMemoEditor, showMemo } from "./memo.js";
 import { constrainGraphNode } from "./graphBounds.js";
+import { GraphChunks } from "./graphChunks.js";
+let chunkState = null;
+const selectedNodeIds = new Set();
+let cancelPendingClick = () => {};
+let padRevision = 0;
 let getPadData = null;
 let getMethodCallNode = null;
 let registeredPadScreen = null;
@@ -14,6 +19,16 @@ export function registerPadModuleForScreen(screen, module) {
 }
 
 export async function drawCallGraph(data) {
+    cancelPendingClick();
+    chunkState = new GraphChunks(data);
+    selectedNodeIds.clear();
+    initChunkControls();
+    renderCallGraph(true);
+}
+
+function renderCallGraph(initial = false) {
+    cancelPendingClick();
+    const data = chunkState.project();
     if (getPadData === null || getMethodCallNode === null) {
       throw new Error("PADモジュールが未登録です。registerPadModuleForScreen を先に呼び出してください。");
     }
@@ -38,10 +53,20 @@ export async function drawCallGraph(data) {
     graphResizeObserver.observe(svg.node());
 
     let clickTimeout = null;
+    cancelPendingClick = () => {
+        clearTimeout(clickTimeout);
+        clickTimeout = null;
+    };
 
     svg.selectAll("*").remove();
 
-    const color = createClassColorScale(data.nodes);
+    createClassColorScale(chunkState.nodes);
+    svg.on("click.chunk-selection", event => {
+        if (event.target !== svg.node()) return;
+        cancelPendingClick();
+        selectedNodeIds.clear();
+        refreshChunkSelection();
+    });
     const drag = d3.drag()
         .clickDistance(4)
         .on("start", function () {
@@ -60,36 +85,15 @@ export async function drawCallGraph(data) {
             d3.select(this).style("cursor", "grab");
         });
 
-    if (data.nodes.length === 1) {
-        // ノードが1つだけのときは中央に長方形で表示
-        const node = svg.append("g")
-            .datum(Object.assign(data.nodes[0], { x: 50, y: 30, fx: 50, fy: 30 }))
-            .classed("nodeStyle", true)
-            .style("cursor", "grab")
-            .style("user-select", "none")
-            .call(drag)
-            .attr("transform", `translate(${50}, ${30})`)
-
-        node.append("rect")
-            .attr("x", -40)
-            .attr("y", -20)
-            .attr("width", 80)
-            .attr("height", 40)
-            .attr("rx", 6)
-            .attr("fill", "#fff") 
-            .attr("stroke", "#333")
-            .attr("stroke-width", 1.5);
-
-        node.append("text")
-            .attr("text-anchor", "middle")
-            .attr("dy", "0.35em")
-            .text(data.nodes[0].label.split('.').pop());
-        
-        window.displayedMethods = data.nodes[0].label;
-        renderGraphPositions();
-        getPadData(data.nodes[0].x, data.nodes[0].y);
-
-        return;
+    if (initial && data.nodes.length === 1 && !data.nodes[0].isChunk) {
+        Object.assign(data.nodes[0], { x: 50, y: 30, fx: 50, fy: 30 });
+    }
+    if (!initial) {
+        // Keep the surrounding diagram in place when membership or expansion changes.
+        data.nodes.forEach(node => {
+            node.fx = node.x;
+            node.fy = node.y;
+        });
     }
     // 複数ノードの場合はforceレイアウト
     const simulation = d3.forceSimulation(data.nodes)
@@ -98,7 +102,7 @@ export async function drawCallGraph(data) {
         .force("center", d3.forceCenter(width / 2, height / 2))
         .force("x", d3.forceX(width / 2).strength(0.025))
         .force("y", d3.forceY(height / 2).strength(0.025))
-        .force("collide", d3.forceCollide(64));
+        .force("collide", d3.forceCollide(d => Math.max(64, nodeWidth(d) / 2 + 16)));
 
     // そして marker はこう定義
     svg.append("defs").append("marker")
@@ -114,7 +118,7 @@ export async function drawCallGraph(data) {
         .attr("fill", "#333");
 
 
-    const link = svg.append("g")
+    svg.append("g")
         .attr("stroke", "#333")
         .attr("stroke-width", 2)
         .selectAll("line")
@@ -134,16 +138,18 @@ export async function drawCallGraph(data) {
         .classed("nodeStyle", true)
         .on("click", (event, d) => {
           if (event.defaultPrevented) return;
-          // ダブルクリック判定
-          if (clickTimeout !== null) {
-              clearTimeout(clickTimeout);
-              clickTimeout = null;
-
-              closeMemoEditor();
-              handleOpenPAD(d);
+          event.stopPropagation();
+          cancelPendingClick();
+          if (event.ctrlKey || event.metaKey) {
+              const occupied = chunkState.chunks.some(chunk => chunk.memberNodeIds.includes(d.id));
+              if (!d.isChunk && !occupied) {
+                  if (selectedNodeIds.has(d.id)) selectedNodeIds.delete(d.id);
+                  else selectedNodeIds.add(d.id);
+                  refreshChunkSelection();
+              }
               return;
           }
-
+          if (d.isChunk || event.detail > 1) return;
           clickTimeout = setTimeout(() => {
             let tmp = {
               Id: -1,
@@ -155,7 +161,17 @@ export async function drawCallGraph(data) {
             clickTimeout = null;
           }, 300);
         })
+      .on("dblclick", (event, d) => {
+        event.stopPropagation();
+        event.preventDefault();
+        cancelPendingClick();
+        if (event.ctrlKey || event.metaKey) return;
+        closeMemoEditor();
+        if (d.isChunk) mutateChunks(() => chunkState.expand(d));
+        else handleOpenPAD(d);
+      })
       .on("mouseenter", function (event, d) {
+        if (d.isChunk) return;
         d3.select(this).select("rect")
           .transition().duration(120)
           .attr("stroke-width", 2); 
@@ -176,12 +192,12 @@ export async function drawCallGraph(data) {
     node.style("cursor", "grab").style("user-select", "none").call(drag);
 
     node.append("rect")
-        .attr("x", -40)
+        .attr("x", d => -nodeWidth(d) / 2)
         .attr("y", -20)
-        .attr("width", 80)
+        .attr("width", d => nodeWidth(d))
         .attr("height", 40)
         .attr("rx", 6)
-        .attr("fill", d => color(getClassName(d))) 
+        .attr("fill", "#fff")
         .attr("stroke", "#333")
         .attr("stroke-width", 1.5);
 
@@ -189,11 +205,52 @@ export async function drawCallGraph(data) {
     node.append("text")
         .attr("text-anchor", "middle")
         .attr("dy", "0.35em")
-        .text(d => d.label.split('.').pop());
+        .text(d => d.isChunk ? d.label : d.label.split('.').pop());
+    node.append("title").text(d => {
+        const owner = chunkState.chunks.find(chunk => chunk.memberNodeIds.includes(d.id));
+        if (d.isChunk) return `${d.label}\n${chunkState.nodes.filter(n => d.memberNodeIds.includes(n.id)).map(n => n.label).join("\n")}\nダブルクリックで展開`;
+        return owner ? `${d.label}\nチャンク: ${owner.label}` : `${d.label}\nCtrl / ⌘ + クリックで選択`;
+    });
 
     simulation.on("tick", renderGraphPositions);
     window.currentSimulation = simulation;
     renderGraphPositions();
+    refreshChunkSelection();
+    if (initial && data.nodes.length === 1 && !data.nodes[0].isChunk) {
+        window.displayedMethods = data.nodes[0].label;
+        getPadData(data.nodes[0].x, data.nodes[0].y);
+    }
+}
+
+function nodeWidth(node) {
+    return node.isChunk ? Math.max(120, (Array.from(node.label).length + 6) * 16) : 80;
+}
+
+function mutateChunks(action) {
+    cancelPendingClick();
+    closeMemoEditor();
+    hideMemo();
+    clearArgNodes();
+    if (window.displayedMethods != null) closePad();
+    action();
+    selectedNodeIds.clear();
+    renderCallGraph();
+}
+
+function initChunkControls() {
+    document.getElementById("chunk-create").onclick = () => {
+        cancelPendingClick();
+        closeMemoEditor();
+        const name = window.prompt("チャンク名を入力してください");
+        if (!name?.trim() || !chunkState.create(name, selectedNodeIds)) return;
+        mutateChunks(() => {});
+    };
+}
+
+function refreshChunkSelection() {
+    d3.select("#graph-layer").selectAll("g.nodeStyle")
+        .classed("chunk-selected", d => selectedNodeIds.has(d.id));
+    document.getElementById("chunk-create").hidden = selectedNodeIds.size < 2;
 }
 
 function renderGraphPositions() {
@@ -238,12 +295,15 @@ export function registerPadPosition(x, y) {
         .attr("transform", `translate(${offset.x},${offset.y})`);
 }
 
-function offsetLine(source, target, offset = 40) {
+function offsetLine(source, target) {
     const dx = target.x - source.x;
     const dy = target.y - source.y;
     const len = Math.sqrt(dx * dx + dy * dy);
     if (len === 0) return { x: target.x, y: target.y };
-    const ratio = (len - offset) / len;
+    const halfWidth = nodeWidth(target) / 2;
+    const boundary = Math.min(Math.abs(dx) > 0 ? halfWidth * len / Math.abs(dx) : Infinity,
+        Math.abs(dy) > 0 ? 20 * len / Math.abs(dy) : Infinity);
+    const ratio = Math.max(0, len - boundary) / len;
     return {
         x: source.x + dx * ratio,
         y: source.y + dy * ratio
@@ -261,6 +321,7 @@ function handleOpenPAD(d) {
     return;
 }
 function openPadForNode(d) {
+  padRevision++;
   // 初期配置の途中でも、PADを開いた時点の配置を保持する。
   window.currentSimulation?.stop();
 
@@ -298,6 +359,7 @@ function switchPad(newNode) {
 }
 
 function closePad() {
+  padRevision++;
   //PADを閉じる
   window.displayedMethods = null;
   d3.select("#pad-layer").selectAll("*").remove();
@@ -319,7 +381,7 @@ function closePad() {
 export function drawMethodCallLink(label, arg = null, x, y) {
   const svg = d3.select("#graph-layer");
   if (!window.methodCallLines) window.methodCallLines = new Map();
-  const targetNodeSel = svg.selectAll("g.nodeStyle").filter(d => d.label === label);
+  const targetNodeSel = visibleMethodNode(label);
   if (targetNodeSel.empty()) return;
 
   const line = svg.append("line")
@@ -336,7 +398,7 @@ export function drawMethodCallLink(label, arg = null, x, y) {
     const targetNode = targetNodeSel.datum(); // 最新座標を参照
     const offset = anchor ? getPadOffset(anchor) : { x: 0, y: 0 };
     const source = { x: x + offset.x, y: y + offset.y };
-    const targetOffset = offsetLine(source, targetNode, 40);
+    const targetOffset = offsetLine(source, targetNode);
     line
       .attr("x1", source.x)
       .attr("y1", source.y)
@@ -344,6 +406,11 @@ export function drawMethodCallLink(label, arg = null, x, y) {
       .attr("y2", targetOffset.y);
   };
   line.node().updatePosition();
+}
+
+function visibleMethodNode(label) {
+  return d3.select("#graph-layer").selectAll("g.nodeStyle").filter(d =>
+    d.isChunk ? chunkState.nodes.some(n => n.label === label && d.memberNodeIds.includes(n.id)) : d.label === label);
 }
 
 function createClassColorScale(nodes, legendSelector = "#legend") {
@@ -399,7 +466,10 @@ function getClassName(node) {
 
 // 引数のノードの描画
 async function drawArgNode(target, args) {
+  const stateAtRequest = chunkState;
+  const revisionAtRequest = padRevision;
   let nodes = await getMethodCallNode();
+  if (stateAtRequest !== chunkState || revisionAtRequest !== padRevision || window.displayedMethods !== target.label) return;
   let idCount = 1000; // メモのための一時的なid。要検討
   nodes.forEach(n => {
     let clickTimeout = null;
@@ -409,6 +479,9 @@ async function drawArgNode(target, args) {
     if (target.label.split('.')[0] !== calledClass || target.label.split('.')[1] !== calledMethod) {
       return;
     }
+    const sourceNodeSel = visibleMethodNode(n.Class + "." + n.Method);
+    if (sourceNodeSel.empty()) return;
+    const sourceNode = sourceNodeSel.datum();
 
     const argList = argumentsText.length > 0 ? argumentsText.split(',').map(a => a.trim()) : [];
     for (let i = 0; i < args.length; i++) {
@@ -420,17 +493,10 @@ async function drawArgNode(target, args) {
     const argGroup = d3.select("#graph-layer")
       .append("g")
       .attr("class", "arg-node")
-      .on("click", (event, d) => {
-          // ダブルクリック判定
-          if (clickTimeout !== null) {
-              clearTimeout(clickTimeout);
-              clickTimeout = null;
-
-              closeMemoEditor();
-              handleOpenPAD(d);
-              return;
-          }
-
+      .on("click", event => {
+          event.stopPropagation();
+          if (event.ctrlKey || event.metaKey || event.detail > 1) return;
+          clearTimeout(clickTimeout);
           clickTimeout = setTimeout(() => {
             let tmp = {
               Id: idCount,
@@ -491,16 +557,12 @@ async function drawArgNode(target, args) {
       .attr("stroke", "#333")
       .attr("stroke-width", 1);
 
-    const svg = d3.select("#graph-layer");
-    const sourceNodeSel = svg.selectAll("g.nodeStyle").filter(d => d.label === n.Class+"." + n.Method);
-    const sourceNode = sourceNodeSel.datum();
-    if (!sourceNode) return;
     argGroup.node().updatePosition = () => {
         const sourcePos = { x: sourceNode.x, y: sourceNode.y }; // ★追加
         const targetPos = { x: target.x, y: target.y };         // ★追加
 
         // ★追加：矢印と同じ offset を使う
-        const targetOffset = offsetLine(sourcePos, targetPos, 40);
+        const targetOffset = offsetLine(sourcePos, targetPos);
         // argGroup 自体のサイズを取得
         const groupBBox = argGroup.node().getBBox();
 

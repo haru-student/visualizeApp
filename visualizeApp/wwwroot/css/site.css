@@ -165,3 +165,11 @@ svg text {
   overflow: hidden;
   contain: paint;
 }
+#chunk-create {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    z-index: 3;
+    max-width: calc(100% - 32px);
+}
+#graph-layer .chunk-selected > rect { stroke: #1769c2; stroke-width: 3; fill: #e8f2ff; }

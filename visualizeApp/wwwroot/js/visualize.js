@@ -61,12 +61,15 @@ export function getPadData(posX, posY) {
         return;
     }
 
+    const requestedMethod = window.displayedMethods;
+    const requestedGraph = window.graphData;
     fetch(`/api/visualize/pad-diagram`, { cache: "no-store" })
         .then(res => {
             if (!res.ok) throw new Error();
             return res.json();
         })
         .then(data => {
+            if (window.displayedMethods !== requestedMethod || window.graphData !== requestedGraph) return;
             const [className, methodName] = window.displayedMethods.split(/\./);
             const filtered = extractMethodDiagram(data, className, methodName);
 
