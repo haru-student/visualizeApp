@@ -160,3 +160,8 @@ svg text {
 
 
 
+
+#visualSection {
+  overflow: hidden;
+  contain: paint;
+}

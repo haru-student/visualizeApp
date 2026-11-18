@@ -1,8 +1,11 @@
 ﻿import { sendLogData } from "./log.js";
 import { closeMemoEditor, hideMemo, openMemoEditor, showMemo } from "./memo.js";
+import { constrainGraphNode } from "./graphBounds.js";
 let getPadData = null;
 let getMethodCallNode = null;
 let registeredPadScreen = null;
+let graphResizeObserver = null;
+const nodeBounds = new WeakMap();
 
 export function registerPadModuleForScreen(screen, module) {
   getPadData = module?.getPadData ?? null;
@@ -16,12 +19,23 @@ export async function drawCallGraph(data) {
     }
     window.graphData = data;
     window.currentSimulation?.stop();
+    graphResizeObserver?.disconnect();
     window.currentSimulation = null;
     window.displayedMethods = null;
     window.displayedPAD = "";
     window.registeredPadScreen = registeredPadScreen;
     const svg = d3.select("#graph-layer")
     const { width, height } = svg.node().getBoundingClientRect();
+    graphResizeObserver = new ResizeObserver(() => {
+        const viewport = svg.node().getBoundingClientRect();
+        if (viewport.width <= 0 || viewport.height <= 0) return;
+        window.currentSimulation?.force("center")
+            ?.x(viewport.width / 2).y(viewport.height / 2);
+        window.currentSimulation?.force("x")?.x(viewport.width / 2);
+        window.currentSimulation?.force("y")?.y(viewport.height / 2);
+        renderGraphPositions();
+    });
+    graphResizeObserver.observe(svg.node());
 
     let clickTimeout = null;
 
@@ -72,16 +86,19 @@ export async function drawCallGraph(data) {
             .text(data.nodes[0].label.split('.').pop());
         
         window.displayedMethods = data.nodes[0].label;
-        getPadData(50, 30);
+        renderGraphPositions();
+        getPadData(data.nodes[0].x, data.nodes[0].y);
 
         return;
     }
     // 複数ノードの場合はforceレイアウト
     const simulation = d3.forceSimulation(data.nodes)
-        .force("link", d3.forceLink(data.links).id(d => d.id).distance(120))
-        .force("charge", d3.forceManyBody().strength(-400))
+        .force("link", d3.forceLink(data.links).id(d => d.id).distance(108))
+        .force("charge", d3.forceManyBody().strength(-230))
         .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("collide", d3.forceCollide(80));
+        .force("x", d3.forceX(width / 2).strength(0.025))
+        .force("y", d3.forceY(height / 2).strength(0.025))
+        .force("collide", d3.forceCollide(64));
 
     // そして marker はこう定義
     svg.append("defs").append("marker")
@@ -176,10 +193,16 @@ export async function drawCallGraph(data) {
 
     simulation.on("tick", renderGraphPositions);
     window.currentSimulation = simulation;
+    renderGraphPositions();
 }
 
 function renderGraphPositions() {
         const svg = d3.select("#graph-layer");
+        const { width, height } = svg.node().getBoundingClientRect();
+        svg.selectAll("g.nodeStyle").each(function (d) {
+            if (!nodeBounds.has(this)) nodeBounds.set(this, this.getBBox());
+            constrainGraphNode(d, nodeBounds.get(this), width, height);
+        });
         svg.selectAll("line.graph-link")
             .attr("x1", d => d.source.x)
             .attr("y1", d => d.source.y)
